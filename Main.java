@@ -14,14 +14,14 @@ public class Main {
             MiniJavaParser parser = new MiniJavaParser(fis);
             
             Goal root = parser.Goal();
-            System.err.println("Program parsed successfully.");
+            System.err.println("Program parsed successfully.\n\n");
 
             SymbolTable symbol_table = new SymbolTable();
 
             CollectVisitor vis = new CollectVisitor(symbol_table);
             root.accept(vis, null);
 
-            System.out.println("\n\nDone Semantic Check. These where scanned:");
+            System.out.println("\n\nDone Semantic Check. These where stored:");
 
             System.out.println(symbol_table.get_set());
             System.out.println(symbol_table.get_subtypes());

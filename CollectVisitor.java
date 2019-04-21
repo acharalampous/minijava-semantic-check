@@ -91,8 +91,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         
         /* Collect class name */
         String class_name = n.f1.accept(this, argu);
-        System.out.println(class_name);
-        symbol_table.add_class(class_name);
+        int r = symbol_table.add_class(class_name);
+        if(r == 0)
+            System.out.println(class_name + " was succesfully added to Symbol Table");
+        else
+            System.out.println("** " + class_name + " was already declared");
 
         n.f2.accept(this, argu);
         n.f3.accept(this, argu);
@@ -121,9 +124,14 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
 
         /* Collect SuperClass name */
         String super_name = n.f3.accept(this, argu);
-        System.out.println(class_name + " extends " + super_name);
-        symbol_table.add_class(class_name);
-        symbol_table.add_subtype(class_name, super_name);
+        int r =symbol_table.add_subtype(class_name, super_name);
+        if(r == 0)
+            System.out.println(class_name + " which extends " + super_name + " was succesfully added to Symbol Table");
+        else if(r == -1)
+            System.out.println("** " + class_name + " was already declared");
+        else if(r == -2)
+            System.out.println("** " + super_name + "(superclass) of " + class_name + " was not declared");
+
 
         n.f4.accept(this, argu);
         n.f5.accept(this, argu);

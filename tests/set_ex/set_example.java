@@ -15,6 +15,25 @@ public class set_example{
         temp_set.add("TEST5");
         System.out.println(temp_set.get_set());
 
+        /* Check if set contains elements */
+        if(temp_set.get_set().contains("TEST6")){
+            System.out.println("SET CONTAINS TEST6");
+        }
+        else{
+            System.out.println("SET DOES NOT CONTAIN TEST6");
+
+        }
+
+        if(temp_set.get_set().contains("TEST2")){
+            System.out.println("SET CONTAINS TEST2");
+        }
+        else{
+            System.out.println("SET DOES NOT CONTAIN TEST2");
+
+        }
+
+        
+
         
     }
 }
