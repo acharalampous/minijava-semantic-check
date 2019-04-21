@@ -2,7 +2,12 @@ import syntaxtree.*;
 import visitor.GJDepthFirst;
 
 public class CollectVisitor extends GJDepthFirst<String, String>{
-    
+
+    SymbolTable symbol_table;
+
+    public CollectVisitor(SymbolTable st){
+        symbol_table = st;
+    }
 
     //
     // User-generated visitor methods below
@@ -87,6 +92,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         /* Collect class name */
         String class_name = n.f1.accept(this, argu);
         System.out.println(class_name);
+        symbol_table.add_class(class_name);
 
         n.f2.accept(this, argu);
         n.f3.accept(this, argu);
@@ -116,6 +122,8 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         /* Collect SuperClass name */
         String super_name = n.f3.accept(this, argu);
         System.out.println(class_name + " extends " + super_name);
+        symbol_table.add_class(class_name);
+        symbol_table.add_subtype(class_name, super_name);
 
         n.f4.accept(this, argu);
         n.f5.accept(this, argu);
