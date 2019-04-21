@@ -122,10 +122,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         
         /* Collect class name */
         String class_name = n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
 
         /* Collect SuperClass name */
         String super_name = n.f3.accept(this, argu);
+
+        /* Store classes */
         int r =symbol_table.add_subtype(class_name, super_name);
         if(r == 0)
             System.out.println(class_name + " which extends " + super_name + " was succesfully added to Symbol Table");
@@ -135,7 +136,6 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
             System.out.println("** " + super_name + "(superclass) of " + class_name + " was not declared");
 
 
-        n.f4.accept(this, argu);
         n.f5.accept(this, argu);
         n.f6.accept(this, argu);
         n.f7.accept(this, argu);
@@ -148,10 +148,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f2 -> ";"
     */
     public String visit(VarDeclaration n, String argu) throws Exception {
-        String _ret=null;
         String type = n.f0.accept(this, argu); // get Type of field
         String name = n.f1.accept(this, argu); // get Name of field
         if(argu != null){// if var declaration in class, store field
+
+            /* Store field */
             int r = symbol_table.add_class_field(argu, type, name);
             if(r == 0)
                 System.out.println("\t" + type + " " + name + " was succesfully added to " + argu + " Fields");
@@ -160,8 +161,9 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
             else if(r == -2)
                 System.out.println("\t** " + type + " " + name + " is redecleared in class " + argu);
         } 
-        n.f2.accept(this, argu);
-        return _ret;
+        
+
+        return null;
     }
 
     /**
@@ -180,21 +182,24 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f12 -> "}"
     */
     public String visit(MethodDeclaration n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
+
+        /* Get return type */
+        String return_type = n.f1.accept(this, argu);
+        
+        /* Get method name */
+        String name = n.f2.accept(this, argu);
+
+
+
         n.f4.accept(this, argu);
-        n.f5.accept(this, argu);
-        n.f6.accept(this, argu);
+        
         n.f7.accept(this, argu);
         n.f8.accept(this, argu);
         n.f9.accept(this, argu);
         n.f10.accept(this, argu);
         n.f11.accept(this, argu);
         n.f12.accept(this, argu);
-        return _ret;
+        return null;
     }
 
     /**

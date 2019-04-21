@@ -7,12 +7,15 @@ public class SymbolTable{
     Map<String, String> subtypes; // Keeps all the pairs of <derived class, super class>
     Set<String> unknown_t; // Set that holds unknown types declared in classes, to be checked later
 
+    Vector<String> temp_method_pars; // Vector that holds parameters of the next method to be stored
+
     /* Constructor */
     public SymbolTable(){
         class_names = new HashMap<>();
         subtypes = new HashMap<>();
         primitive_t = new HashSet<>(Arrays.asList("int", "boolean", "int[]"));
         unknown_t = new HashSet<>();
+        temp_method_pars = new Vector<>();
     }
 
     /* Adds a new class_name to set and initialize its content */
@@ -102,6 +105,29 @@ public class SymbolTable{
         return 0;
     }
 
+    public int add_class_method(String class_name, String return_type, String name){
+        /* Get class content */
+        ClassContent cc = this.class_names.get(class_name);
+        if(cc == null){ // class name not found
+            return -1;
+        }
+
+        Map<String, Vector<String>> class_fields = cc.get_methods();
+        if(class_fields.containsKey(name)){ // check if method was redecleared
+            return -2;
+        }
+
+        Vector<String> new_vector = new Vector<>();
+        new_vector.add(return_type);
+
+        // /* If type is unknown, may be declared later. Save it to check after first visitor pass */
+        // if(!primitive_t.contains(type)){ // check if type of field is primitive
+        //     unknown_t.add(type);
+        // }
+        return 0;
+    }
+
+
     /*
      * After the first visitor pass, where all class types are collected. If a class has a field of
      * class type, it should be stored in unknown set. All names in unknown set are checked if are 
@@ -121,5 +147,16 @@ public class SymbolTable{
 
         unknown_t.clear();
         return null;
+    }
+
+
+    /* Push new string(type) to temporary method parameters */
+    public void add_temp_par(String type){
+        temp_method_pars.add(type);
+    }
+
+    /* Clears the temporary method parameters */
+    public void clear_temp_pars(){
+        temp_method_pars.clear();
     }
 }

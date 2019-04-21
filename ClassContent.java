@@ -11,8 +11,12 @@ public class ClassContent{
     }
 
     public Map<String, String> get_fields(){
-        return this.fields;
+        return fields;
     }
 
+    
+    public Map<String, Vector<String>> get_methods(){
+        return methods;
+    }
 
 }
