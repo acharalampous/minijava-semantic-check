@@ -1,9 +1,21 @@
+CC = javac
+JTB = jtb132di.jar
+JCC = javacc5.jar
+GRM1 = minijava.jj
+GRM2 = minijava-jtb.jj
+CL = *.class
+ST = syntaxtree
+VS = visitor
+MJV = MiniJavaParseTokenManager.java MiniJavaParser.java MiniJavaParserConstants.java MiniJavaParserTokenManager.java
+EXC = ParseException.java 
+TK = Token.java TokenMgrError.java JavaCharStream.java
+
 all: compile
 
 compile:
-	java -jar jtb132di.jar minijava.jj
-	java -jar javacc5.jar minijava-jtb.jj
-	javac Main.java
+	java -jar $(JTB) $(GRM1)
+	java -jar $(JCC) $(GRM2)
+	$(CC) Main.java
 
 clean:
-	rm -rf *.class *~ syntaxtree visitor JavaCharStream.java ParseException.java minijava-jtb.jj MiniJavaParser.java MiniJavaParserConstants.java MiniJavaParseTokenManager.java Token.java TokenMgrError.java MiniJavaParserTokenManager.java
+	rm -rf *~ $(GRM2) $(CL) $(ST) $(VS) $(MJV) $(EXC) $(TK)      
