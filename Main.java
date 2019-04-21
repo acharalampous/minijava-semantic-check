@@ -26,12 +26,21 @@ public class Main {
             System.out.println(symbol_table.get_set());
             System.out.println(symbol_table.get_subtypes());
 
+            System.out.println("\n\nUnknown Types:");
+
+            String err_type = symbol_table.check_unknown();
+            if(err_type != null){
+                System.out.println("Undefined reference to " + err_type);
+            }
         }
         catch(ParseException ex){
             System.out.println(ex.getMessage());
         }
         catch(FileNotFoundException ex){
             System.err.println(ex.getMessage());
+        }
+        catch(Exception ex){
+            System.err.println("sa");
         }
         finally{
             try{

@@ -1,5 +1,5 @@
 package tests.set_ex;
-
+import java.util.*;
 public class set_example{
     
     public static void main(String[] args) {
@@ -30,6 +30,16 @@ public class set_example{
         else{
             System.out.println("SET DOES NOT CONTAIN TEST2");
 
+        }
+
+
+        System.out.println("\n\nPARSING SET ");
+        Set<String> sset = temp_set.get_set();
+
+        sset.remove()
+
+        for (String s : sset) {
+            System.out.println(s);
         }
 
         

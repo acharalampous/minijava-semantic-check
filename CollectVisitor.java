@@ -9,16 +9,18 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         symbol_table = st;
     }
 
+
+
     //
     // User-generated visitor methods below
     //
 
     /**
      * f0 -> MainClass()
-    * f1 -> ( TypeDeclaration() )*
-    * f2 -> <EOF>
-    */
-    public String visit(Goal n, String argu) {
+     * f1 -> ( TypeDeclaration() )*
+     * f2 -> <EOF>
+     */
+    public String visit(Goal n, String argu) throws Exception {
         String _ret = null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -46,7 +48,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f16 -> "}"
     * f17 -> "}"
     */
-    public String visit(MainClass n, String argu) {
+    public String visit(MainClass n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -73,7 +75,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> ClassDeclaration()
     *       | ClassExtendsDeclaration()
     */
-    public String visit(TypeDeclaration n, String argu) {
+    public String visit(TypeDeclaration n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -85,7 +87,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f4 -> ( MethodDeclaration() )*
     * f5 -> "}"
     */
-    public String visit(ClassDeclaration n, String argu) {
+    public String visit(ClassDeclaration n, String argu) throws Exception {
         String _ret = null;
         n.f0.accept(this, argu);
         
@@ -98,7 +100,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
             System.out.println("** " + class_name + " was already declared");
 
         n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
+        n.f3.accept(this, class_name);
         n.f4.accept(this, argu);
         n.f5.accept(this, argu);
         return _ret;
@@ -114,7 +116,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f6 -> ( MethodDeclaration() )*
     * f7 -> "}"
     */
-    public String visit(ClassExtendsDeclaration n, String argu) {
+    public String visit(ClassExtendsDeclaration n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         
@@ -141,14 +143,23 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     }
 
     /**
-    * f0 -> Type()
+     * f0 -> Type()
     * f1 -> Identifier()
     * f2 -> ";"
     */
-    public String visit(VarDeclaration n, String argu) {
+    public String visit(VarDeclaration n, String argu) throws Exception {
         String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
+        String type = n.f0.accept(this, argu); // get Type of field
+        String name = n.f1.accept(this, argu); // get Name of field
+        if(argu != null){// if var declaration in class, store field
+            int r = symbol_table.add_class_field(argu, type, name);
+            if(r == 0)
+                System.out.println("\t" + type + " " + name + " was succesfully added to " + argu + " Fields");
+            else if(r == -1)
+                System.out.println("\t** Something went wrong with " + type + " " + name + " declaration of class " + argu);
+            else if(r == -2)
+                System.out.println("\t** " + type + " " + name + " is redecleared in class " + argu);
+        } 
         n.f2.accept(this, argu);
         return _ret;
     }
@@ -168,7 +179,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f11 -> ";"
     * f12 -> "}"
     */
-    public String visit(MethodDeclaration n, String argu) {
+    public String visit(MethodDeclaration n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -190,7 +201,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> FormalParameter()
     * f1 -> FormalParameterTail()
     */
-    public String visit(FormalParameterList n, String argu) {
+    public String visit(FormalParameterList n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -201,7 +212,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> Type()
     * f1 -> Identifier()
     */
-    public String visit(FormalParameter n, String argu) {
+    public String visit(FormalParameter n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -211,7 +222,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     /**
      * f0 -> ( FormalParameterTerm() )*
     */
-    public String visit(FormalParameterTail n, String argu) {
+    public String visit(FormalParameterTail n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -219,7 +230,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> ","
     * f1 -> FormalParameter()
     */
-    public String visit(FormalParameterTerm n, String argu) {
+    public String visit(FormalParameterTerm n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -232,7 +243,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     *       | IntegerType()
     *       | Identifier()
     */
-    public String visit(Type n, String argu) {
+    public String visit(Type n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -241,26 +252,22 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> "["
     * f2 -> "]"
     */
-    public String visit(ArrayType n, String argu) {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        return _ret;
+    public String visit(ArrayType n, String argu) throws Exception {
+        return "int[]";
     }
 
     /**
      * f0 -> "boolean"
     */
-    public String visit(BooleanType n, String argu) {
-        return n.f0.accept(this, argu);
+    public String visit(BooleanType n, String argu) throws Exception {
+        return "boolean";
     }
 
     /**
      * f0 -> "int"
     */
-    public String visit(IntegerType n, String argu) {
-        return n.f0.accept(this, argu);
+    public String visit(IntegerType n, String argu) throws Exception {
+        return "int";
     }
 
     /**
@@ -271,7 +278,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     *       | WhileStatement()
     *       | PrintStatement()
     */
-    public String visit(Statement n, String argu) {
+    public String visit(Statement n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -280,7 +287,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> ( Statement() )*
     * f2 -> "}"
     */
-    public String visit(Block n, String argu) {
+    public String visit(Block n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -294,7 +301,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f2 -> Expression()
     * f3 -> ";"
     */
-    public String visit(AssignmentStatement n, String argu) {
+    public String visit(AssignmentStatement n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -312,7 +319,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f5 -> Expression()
     * f6 -> ";"
     */
-    public String visit(ArrayAssignmentStatement n, String argu) {
+    public String visit(ArrayAssignmentStatement n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -333,7 +340,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f5 -> "else"
     * f6 -> Statement()
     */
-    public String visit(IfStatement n, String argu) {
+    public String visit(IfStatement n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -352,7 +359,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f3 -> ")"
     * f4 -> Statement()
     */
-    public String visit(WhileStatement n, String argu) {
+    public String visit(WhileStatement n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -369,7 +376,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f3 -> ")"
     * f4 -> ";"
     */
-    public String visit(PrintStatement n, String argu) {
+    public String visit(PrintStatement n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -390,7 +397,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     *       | MessageSend()
     *       | Clause()
     */
-    public String visit(Expression n, String argu) {
+    public String visit(Expression n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -399,7 +406,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> "&&"
     * f2 -> Clause()
     */
-    public String visit(AndExpression n, String argu) {
+    public String visit(AndExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -412,7 +419,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> "<"
     * f2 -> PrimaryExpression()
     */
-    public String visit(CompareExpression n, String argu) {
+    public String visit(CompareExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -425,7 +432,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> "+"
     * f2 -> PrimaryExpression()
     */
-    public String visit(PlusExpression n, String argu) {
+    public String visit(PlusExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -438,7 +445,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> "-"
     * f2 -> PrimaryExpression()
     */
-    public String visit(MinusExpression n, String argu) {
+    public String visit(MinusExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -451,7 +458,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> "*"
     * f2 -> PrimaryExpression()
     */
-    public String visit(TimesExpression n, String argu) {
+    public String visit(TimesExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -465,7 +472,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f2 -> PrimaryExpression()
     * f3 -> "]"
     */
-    public String visit(ArrayLookup n, String argu) {
+    public String visit(ArrayLookup n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -479,7 +486,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> "."
     * f2 -> "length"
     */
-    public String visit(ArrayLength n, String argu) {
+    public String visit(ArrayLength n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -495,7 +502,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f4 -> ( ExpressionList() )?
     * f5 -> ")"
     */
-    public String visit(MessageSend n, String argu) {
+    public String visit(MessageSend n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -510,7 +517,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> Expression()
     * f1 -> ExpressionTail()
     */
-    public String visit(ExpressionList n, String argu) {
+    public String visit(ExpressionList n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -520,7 +527,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     /**
      * f0 -> ( ExpressionTerm() )*
     */
-    public String visit(ExpressionTail n, String argu) {
+    public String visit(ExpressionTail n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -528,7 +535,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> ","
     * f1 -> Expression()
     */
-    public String visit(ExpressionTerm n, String argu) {
+    public String visit(ExpressionTerm n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -539,7 +546,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> NotExpression()
     *       | PrimaryExpression()
     */
-    public String visit(Clause n, String argu) {
+    public String visit(Clause n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -553,43 +560,42 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     *       | AllocationExpression()
     *       | BracketExpression()
     */
-    public String visit(PrimaryExpression n, String argu) {
+    public String visit(PrimaryExpression n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
     /**
      * f0 -> <INTEGER_LITERAL>
     */
-    public String visit(IntegerLiteral n, String argu) {
+    public String visit(IntegerLiteral n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
     /**
      * f0 -> "true"
     */
-    public String visit(TrueLiteral n, String argu) {
+    public String visit(TrueLiteral n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
     /**
      * f0 -> "false"
     */
-    public String visit(FalseLiteral n, String argu) {
+    public String visit(FalseLiteral n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
     /**
      * f0 -> <IDENTIFIER>
     */
-    public String visit(Identifier n, String argu) {
+    public String visit(Identifier n, String argu) throws Exception {
         return n.f0.tokenImage; // return Identifier name
-        // return n.f0.accept(this, argu);
     }
 
     /**
      * f0 -> "this"
     */
-    public String visit(ThisExpression n, String argu) {
+    public String visit(ThisExpression n, String argu) throws Exception {
         return n.f0.accept(this, argu);
     }
 
@@ -600,7 +606,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f3 -> Expression()
     * f4 -> "]"
     */
-    public String visit(ArrayAllocationExpression n, String argu) {
+    public String visit(ArrayAllocationExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -616,7 +622,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f2 -> "("
     * f3 -> ")"
     */
-    public String visit(AllocationExpression n, String argu) {
+    public String visit(AllocationExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -629,7 +635,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f0 -> "!"
     * f1 -> Clause()
     */
-    public String visit(NotExpression n, String argu) {
+    public String visit(NotExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -641,12 +647,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> Expression()
     * f2 -> ")"
     */
-    public String visit(BracketExpression n, String argu) {
+    public String visit(BracketExpression n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
         n.f2.accept(this, argu);
         return _ret;
     }
-
 }

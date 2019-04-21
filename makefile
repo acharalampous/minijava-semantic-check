@@ -13,7 +13,7 @@ TK = Token.java TokenMgrError.java JavaCharStream.java
 all: compile
 
 compile:
-	java -jar $(JTB) $(GRM1)
+	java -jar $(JTB) -te $(GRM1)
 	java -jar $(JCC) $(GRM2)
 	$(CC) Main.java
 
