@@ -174,6 +174,7 @@ public class SymbolTable{
             return -1;
         }
 
+
         int result = overload_check(class_name, method_name);
         if(result != 0){
             return result;
@@ -192,32 +193,36 @@ public class SymbolTable{
      * Method Overloading: -1.
      */
     public int overload_check(String class_name, String method_name){
+        /* Must check the whole inheritance tree, to check if every super class has the method_name */
         String super_name = subtypes.get(class_name);
-        if(super_name == null){
-            return 0;
-        }
+        
+        while(super_name != null){
+            /* Get super class methods */
+            ClassContent super_cc = this.class_names.get(super_name);
+            Map<String, Vector<String>> super_methods = super_cc.get_methods();
 
-        /* Get super class methods */
-        ClassContent super_cc = this.class_names.get(super_name);
-        Map<String, Vector<String>> super_methods = super_cc.get_methods();
-
-        /* Search if method is declared */
-        Vector<String> method_pars = super_methods.get(method_name);
-        if(method_pars == null){ // method not declared
-            return 0;
-        }
-
-        /* Check super's method pars with derived class method pars are the same */
-        if(method_pars.size() != temp_method_pars.size()){
-            return -1; // method overloading
-        }
-        else{
-            for(int i = 0; i < method_pars.size(); i++){ // check if all argument types are the same
-                if(!(method_pars.elementAt(i).equals(temp_method_pars.elementAt(i))))
-                    return -1; // found different type
+            /* Search if method is declared */
+            Vector<String> method_pars = super_methods.get(method_name);
+            if(method_pars == null){ // method not declared
+                super_name = subtypes.get(super_name); // get next super class
+                continue;
             }
-        }
 
+            /* Check super's method pars with derived class method pars are the same */
+            if(method_pars.size() != temp_method_pars.size()){
+                return -1; // method overloading
+            }
+            else{
+                for(int i = 0; i < method_pars.size(); i++){ // check if all argument types are the same
+                    if(!(method_pars.elementAt(i).equals(temp_method_pars.elementAt(i))))
+                        return -1; // found different type
+                }
+            }
+
+            /* Get "ancestor" class */ 
+            super_name = subtypes.get(super_name);
+        }
+        
         return 0;
     }
 
