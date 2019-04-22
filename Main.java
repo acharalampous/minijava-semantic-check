@@ -32,6 +32,8 @@ public class Main {
             if(err_type != null){
                 System.out.println("Undefined reference to " + err_type);
             }
+
+            symbol_table.print_offsets();
         }
         catch(ParseException ex){
             System.out.println(ex.getMessage());

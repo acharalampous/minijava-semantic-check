@@ -11,7 +11,7 @@ public class SymbolTable{
 
     /* Constructor */
     public SymbolTable(){
-        class_names = new HashMap<>();
+        class_names = new LinkedHashMap<>();
         subtypes = new HashMap<>();
         primitive_t = new HashSet<>(Arrays.asList("int", "boolean", "int[]"));
         unknown_t = new HashSet<>();
@@ -23,8 +23,32 @@ public class SymbolTable{
         class_names.put(new_class, new ClassContent());
     }
 
-    /* Adds a new pair of classes in map */ 
+    /* Adds a new pair of classes in map after all fields/methods of super_class are stored in derived. */ 
     public void store_subtype(String derived_class, String super_class){
+
+        ClassContent cc = class_names.get(derived_class);
+        ClassContent scc = class_names.get(super_class);
+
+        /* Inherite super's fields */ 
+        Map<String, String> s_fields = scc.get_fields();
+        cc.inherite_fields(s_fields);
+
+        /* Inherite super's s_fields(super of super) */
+        s_fields = scc.get_s_fields();
+        cc.inherite_fields(s_fields);
+
+        /* Inherite super's methods */ 
+        Map<String, Vector<String>> s_methods = scc.get_methods();
+        cc.inherite_methods(s_methods);
+
+        /* Inherite super's s_methods(super of super) */
+        s_methods = scc.get_s_methods();
+        cc.inherite_methods(s_methods);
+
+        /* Set offsets */
+        cc.set_f_offset(scc.get_f_next_offset());
+        cc.set_m_offset(scc.get_m_next_offset());
+
         subtypes.put(derived_class, super_class);
     }
 
@@ -59,7 +83,7 @@ public class SymbolTable{
      * and then the pair in the subtypes Map
      */
     public int add_subtype(String derived_class, String super_class){
-        /* Check if class\ was already declared */
+        /* Check if class was already declared */
         if(class_names.containsKey(derived_class)){
             return -1;
         }
@@ -96,7 +120,9 @@ public class SymbolTable{
             return -2;
         }
 
+        /* Add field and its offset */
         class_fields.put(name, type);
+        cc.add_f_offset(type, name);
 
         /* If type is unknown, may be declared later. Save it to check after first visitor pass */
         if(!primitive_t.contains(type)){ // check if type of field is primitive
@@ -176,11 +202,16 @@ public class SymbolTable{
 
 
         int result = overload_check(class_name, method_name);
-        if(result != 0){
+        if(result < 0){
             return result;
         }
-
+        
         cc.add_method(method_name, temp_method_pars);
+
+        /* Add offset if method is not overidding super's */
+        if(result == 0){
+            cc.add_m_offset(method_name);
+        }
 
         return 0;
     }
@@ -189,45 +220,65 @@ public class SymbolTable{
      * Given a class name and method, must check if method is overidding and not overloading.
      * First, it checks if class_name is derived and if yes checks if method_name is declared in super class.
      * If it is, it must have the same return type and arguments.
-     * Valid method declaration: 0,
      * Method Overloading: -1.
+     * Method declaration with no overidding: 0,
+     * Method declaration with overidding: 1,
      */
     public int overload_check(String class_name, String method_name){
-        /* Must check the whole inheritance tree, to check if every super class has the method_name */
-        String super_name = subtypes.get(class_name);
-        
-        while(super_name != null){
-            /* Get super class methods */
-            ClassContent super_cc = this.class_names.get(super_name);
-            Map<String, Vector<String>> super_methods = super_cc.get_methods();
+        /* Get super class methods */
+        ClassContent cc = this.class_names.get(class_name);
+        Map<String, Vector<String>> s_methods = cc.get_s_methods();
 
-            /* Search if method is declared */
-            Vector<String> method_pars = super_methods.get(method_name);
-            if(method_pars == null){ // method not declared
-                super_name = subtypes.get(super_name); // get next super class
-                continue;
-            }
-
-            /* Check super's method pars with derived class method pars are the same */
-            if(method_pars.size() != temp_method_pars.size()){
-                return -1; // method overloading
-            }
-            else{
-                for(int i = 0; i < method_pars.size(); i++){ // check if all argument types are the same
-                    if(!(method_pars.elementAt(i).equals(temp_method_pars.elementAt(i))))
-                        return -1; // found different type
-                }
-            }
-
-            /* Get "ancestor" class */ 
-            super_name = subtypes.get(super_name);
+        /* Search if method is declared */
+        Vector<String> method_pars = s_methods.get(method_name);
+        if(method_pars == null){ // method not declared
+            return 0;
         }
-        
-        return 0;
+
+        /* Check super's method pars with derived class method pars are the same */
+        if(method_pars.size() != temp_method_pars.size()){
+            return -1; // method overloading
+        }
+        else{
+            for(int i = 0; i < method_pars.size(); i++){ // check if all argument types are the same
+                if(!(method_pars.elementAt(i).equals(temp_method_pars.elementAt(i))))
+                    return -1; // found different type
+            }
+        }
+
+        return 1;
     }
 
     /* Clears the temporary method parameters */
     public void clear_temp_pars(){
         temp_method_pars = null;
+    }
+
+    public void print_offsets(){
+
+        System.out.println("Printing Class Offsets:");
+        /* Print offset for all classes' fields and methods */
+        for (Map.Entry<String, ClassContent> entry : this.class_names.entrySet()){
+            String class_name = entry.getKey();
+            System.out.println("\n\n- Class " + class_name + " -");
+
+            ClassContent cc = entry.getValue();
+            
+            /* Print fields */
+            Vector<NameOffset> f_offsets = cc.get_f_offsets(); 
+            System.out.println("  -- Fields --");
+
+            for(NameOffset field : f_offsets){
+                System.out.println("    " + class_name + "." + field.get_name() + " : " + field.get_offset());
+            }
+
+            /* Print methods */
+            Vector<NameOffset> m_offsets = cc.get_m_offsets(); 
+            System.out.println("  -- Methods --");
+
+            for(NameOffset field : m_offsets){
+                System.out.println("    " + class_name + "." + field.get_name() + " : " + field.get_offset());
+            }
+        }
     }
 }

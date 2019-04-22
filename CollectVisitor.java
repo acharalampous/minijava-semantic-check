@@ -98,6 +98,8 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
 
         n.f3.accept(this, class_name);
         n.f4.accept(this, class_name);
+
+        
         return null;
     }
 
@@ -112,9 +114,6 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f7 -> "}"
     */
     public String visit(ClassExtendsDeclaration n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        
         /* Collect class name */
         String class_name = n.f1.accept(this, argu);
 
@@ -133,7 +132,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
 
         n.f5.accept(this, class_name);
         n.f6.accept(this, class_name);
-        return _ret;
+        return null;
     }
 
     /**
@@ -145,7 +144,6 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         String type = n.f0.accept(this, argu); // get Type of field
         String name = n.f1.accept(this, argu); // get Name of field
         if(argu != null){// if var declaration in class, store field
-
             /* Store field */
             int result = symbol_table.add_class_field(argu, type, name);
             if(result == 0)
