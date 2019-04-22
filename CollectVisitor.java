@@ -87,10 +87,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f4 -> ( MethodDeclaration() )*
     * f5 -> "}"
     */
-    public String visit(ClassDeclaration n, String argu) throws Exception {
-        String _ret = null;
-        n.f0.accept(this, argu);
-        
+    public String visit(ClassDeclaration n, String argu) throws Exception {        
         /* Collect class name */
         String class_name = n.f1.accept(this, argu);
         int r = symbol_table.add_class(class_name);
@@ -99,11 +96,9 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         else
             System.out.println("** " + class_name + " was already declared");
 
-        n.f2.accept(this, argu);
         n.f3.accept(this, class_name);
-        n.f4.accept(this, argu);
-        n.f5.accept(this, argu);
-        return _ret;
+        n.f4.accept(this, class_name);
+        return null;
     }
 
     /**
@@ -136,9 +131,8 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
             System.out.println("** " + super_name + "(superclass) of " + class_name + " was not declared");
 
 
-        n.f5.accept(this, argu);
-        n.f6.accept(this, argu);
-        n.f7.accept(this, argu);
+        n.f5.accept(this, class_name);
+        n.f6.accept(this, class_name);
         return _ret;
     }
 
@@ -153,12 +147,12 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         if(argu != null){// if var declaration in class, store field
 
             /* Store field */
-            int r = symbol_table.add_class_field(argu, type, name);
-            if(r == 0)
+            int result = symbol_table.add_class_field(argu, type, name);
+            if(result == 0)
                 System.out.println("\t" + type + " " + name + " was succesfully added to " + argu + " Fields");
-            else if(r == -1)
+            else if(result == -1)
                 System.out.println("\t** Something went wrong with " + type + " " + name + " declaration of class " + argu);
-            else if(r == -2)
+            else if(result == -2)
                 System.out.println("\t** " + type + " " + name + " is redecleared in class " + argu);
         } 
         
@@ -189,16 +183,21 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         /* Get method name */
         String name = n.f2.accept(this, argu);
 
-
-
+        int result = symbol_table.check_class_method(argu, return_type, name);
+        if(result == -1)
+            System.out.println("\t** Something went wrong with " + return_type + " " + name + " declaration of class " + argu);
+        else if(result == -2)
+            System.out.println("\t** " + return_type + " " + name + " is redecleared in class " + argu);
+        
         n.f4.accept(this, argu);
         
-        n.f7.accept(this, argu);
-        n.f8.accept(this, argu);
-        n.f9.accept(this, argu);
-        n.f10.accept(this, argu);
-        n.f11.accept(this, argu);
-        n.f12.accept(this, argu);
+        result = symbol_table.add_class_method(argu, name);
+        if(result == 0)
+            System.out.println("\t" + return_type + " " + name + " was succesfully added to " + argu + " Methods");
+        else
+            System.out.println("\t**" + return_type + " " + name + " is overloading super class of " + argu);
+
+        symbol_table.clear_temp_pars();
         return null;
     }
 
@@ -218,10 +217,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> Identifier()
     */
     public String visit(FormalParameter n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
+        String type = n.f0.accept(this, argu);
         n.f1.accept(this, argu);
-        return _ret;
+        
+        symbol_table.add_method_par(type);
+        return null;
     }
 
     /**

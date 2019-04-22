@@ -10,6 +10,10 @@ public class ClassContent{
         methods = new HashMap<>();
     }
 
+    public void add_method(String name, Vector<String> parameters){
+        methods.put(name, parameters);
+    }
+
     public Map<String, String> get_fields(){
         return fields;
     }

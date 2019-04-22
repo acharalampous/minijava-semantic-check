@@ -15,7 +15,7 @@ public class SymbolTable{
         subtypes = new HashMap<>();
         primitive_t = new HashSet<>(Arrays.asList("int", "boolean", "int[]"));
         unknown_t = new HashSet<>();
-        temp_method_pars = new Vector<>();
+        temp_method_pars = null;
     }
 
     /* Adds a new class_name to set and initialize its content */
@@ -105,26 +105,37 @@ public class SymbolTable{
         return 0;
     }
 
-    public int add_class_method(String class_name, String return_type, String name){
+    
+    public int check_class_method(String class_name, String return_type, String name){
         /* Get class content */
         ClassContent cc = this.class_names.get(class_name);
         if(cc == null){ // class name not found
             return -1;
         }
 
-        Map<String, Vector<String>> class_fields = cc.get_methods();
-        if(class_fields.containsKey(name)){ // check if method was redecleared
+        Map<String, Vector<String>> class_methods = cc.get_methods();
+        if(class_methods.containsKey(name)){ // check if method was redecleared
             return -2;
         }
 
-        Vector<String> new_vector = new Vector<>();
-        new_vector.add(return_type);
+        /* Create new vector and place return type at 0 index */
+        temp_method_pars = new Vector<>();
+        temp_method_pars.add(return_type);
 
-        // /* If type is unknown, may be declared later. Save it to check after first visitor pass */
-        // if(!primitive_t.contains(type)){ // check if type of field is primitive
-        //     unknown_t.add(type);
-        // }
+        /* If type is unknown, may be declared later. Save it to check after first visitor pass */
+        if(!primitive_t.contains(return_type)){ // check if type of field is primitive
+            unknown_t.add(return_type);
+        }
         return 0;
+    }
+
+    public void add_method_par(String type){
+        temp_method_pars.add(type);
+
+        /* If type is unknown, may be declared later. Save it to check after first visitor pass */
+        if(!primitive_t.contains(type)){ // check if type of field is primitive
+            unknown_t.add(type);
+        }
     }
 
 
@@ -155,8 +166,63 @@ public class SymbolTable{
         temp_method_pars.add(type);
     }
 
+    /* Assignes to given class name the parameter vector */
+    public int add_class_method(String class_name, String method_name){
+        /* Get class content */
+        ClassContent cc = this.class_names.get(class_name);
+        if(cc == null){ // class name not found
+            return -1;
+        }
+
+        int result = overload_check(class_name, method_name);
+        if(result != 0){
+            return result;
+        }
+
+        cc.add_method(method_name, temp_method_pars);
+
+        return 0;
+    }
+
+    /*
+     * Given a class name and method, must check if method is overidding and not overloading.
+     * First, it checks if class_name is derived and if yes checks if method_name is declared in super class.
+     * If it is, it must have the same return type and arguments.
+     * Valid method declaration: 0,
+     * Method Overloading: -1.
+     */
+    public int overload_check(String class_name, String method_name){
+        String super_name = subtypes.get(class_name);
+        if(super_name == null){
+            return 0;
+        }
+
+        /* Get super class methods */
+        ClassContent super_cc = this.class_names.get(super_name);
+        Map<String, Vector<String>> super_methods = super_cc.get_methods();
+
+        /* Search if method is declared */
+        Vector<String> method_pars = super_methods.get(method_name);
+        if(method_pars == null){ // method not declared
+            return 0;
+        }
+
+        /* Check super's method pars with derived class method pars are the same */
+        if(method_pars.size() != temp_method_pars.size()){
+            return -1; // method overloading
+        }
+        else{
+            for(int i = 0; i < method_pars.size(); i++){ // check if all argument types are the same
+                if(!(method_pars.elementAt(i).equals(temp_method_pars.elementAt(i))))
+                    return -1; // found different type
+            }
+        }
+
+        return 0;
+    }
+
     /* Clears the temporary method parameters */
     public void clear_temp_pars(){
-        temp_method_pars.clear();
+        temp_method_pars = null;
     }
 }
