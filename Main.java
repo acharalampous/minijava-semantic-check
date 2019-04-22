@@ -21,12 +21,10 @@ public class Main {
             CollectVisitor vis = new CollectVisitor(symbol_table);
             root.accept(vis, null);
 
-            System.out.println("\n\nDone Semantic Check. These where stored:");
+            System.out.println("\n\nDone Semantic Check.\n\n");
 
-            System.out.println(symbol_table.get_set());
-            System.out.println(symbol_table.get_subtypes());
-
-            System.out.println("\n\nUnknown Types:");
+            // System.out.println(symbol_table.get_class_names());
+            // System.out.println(symbol_table.get_subtypes());
 
             String err_type = symbol_table.check_unknown();
             if(err_type != null){
@@ -41,8 +39,8 @@ public class Main {
         catch(FileNotFoundException ex){
             System.err.println(ex.getMessage());
         }
-        catch(Exception ex){
-            System.err.println("sa");
+        catch(Exception error_msg){
+            System.err.println("\n\n" + error_msg);
         }
         finally{
             try{

@@ -1,4 +1,15 @@
+/*******************************/
+/* SymbolTable.java */
+
+/* Name:    Andreas Charalampous
+ * A.M :    1115201500195
+ * e-mail:  sdi1500195@di.uoa.gr
+ */
+/********************************/
 import java.util.*;
+
+
+/* Implementation of a Symbol Table that it will be used for semantic check for MiniJava Language */
 
 public class SymbolTable{
 
@@ -9,6 +20,8 @@ public class SymbolTable{
 
     Vector<String> temp_method_pars; // Vector that holds parameters of the next method to be stored
 
+
+    
     /* Constructor */
     public SymbolTable(){
         class_names = new LinkedHashMap<>();
@@ -17,50 +30,7 @@ public class SymbolTable{
         unknown_t = new HashSet<>();
         temp_method_pars = null;
     }
-
-    /* Adds a new class_name to set and initialize its content */
-    public void store_class(String new_class){
-        class_names.put(new_class, new ClassContent());
-    }
-
-    /* Adds a new pair of classes in map after all fields/methods of super_class are stored in derived. */ 
-    public void store_subtype(String derived_class, String super_class){
-
-        ClassContent cc = class_names.get(derived_class);
-        ClassContent scc = class_names.get(super_class);
-
-        /* Inherite super's fields */ 
-        Map<String, String> s_fields = scc.get_fields();
-        cc.inherite_fields(s_fields);
-
-        /* Inherite super's s_fields(super of super) */
-        s_fields = scc.get_s_fields();
-        cc.inherite_fields(s_fields);
-
-        /* Inherite super's methods */ 
-        Map<String, Vector<String>> s_methods = scc.get_methods();
-        cc.inherite_methods(s_methods);
-
-        /* Inherite super's s_methods(super of super) */
-        s_methods = scc.get_s_methods();
-        cc.inherite_methods(s_methods);
-
-        /* Set offsets */
-        cc.set_f_offset(scc.get_f_next_offset());
-        cc.set_m_offset(scc.get_m_next_offset());
-
-        subtypes.put(derived_class, super_class);
-    }
-
-    /* Returns class_names set */
-    public Map<String, ClassContent> get_set(){
-        return class_names;
-    }
-
-    /* Returns the subtypes map */
-    public Map<String, String> get_subtypes(){
-        return subtypes;
-    }
+    
 
     /* 
      * Given a new class name, checks if not already declared(stored), and stores it in Symbol Tables.
@@ -76,7 +46,7 @@ public class SymbolTable{
             return 0;
         }
     }
-
+    
     /* 
      * Given a pair of classes, first checks if derived_class is not already declared and then 
      * if super_class is declared. If both are valid, it stores the derived class in class_names
@@ -97,41 +67,77 @@ public class SymbolTable{
             store_subtype(derived_class, super_class); // store subtype pair 
             return 0;
         }
-
+        
     }
 
+    /* Adds a new pair of subtyping classes in map after all variables/methods of super_class are stored in derived. */ 
+    public void store_subtype(String derived_class, String super_class){
+        /* Get both's content */
+        ClassContent cc = class_names.get(derived_class);
+        ClassContent scc = class_names.get(super_class);
 
+        /* Inherite super's variables */ 
+        Map<String, String> s_variables = scc.get_variables();
+        cc.inherite_variables(s_variables);
+
+        /* Inherite super's s_variables(super of super) */
+        s_variables = scc.get_s_variables();
+        cc.inherite_variables(s_variables);
+        
+        /* Inherite super's methods */ 
+        Map<String, Vector<String>> s_methods = scc.get_methods();
+        cc.inherite_methods(s_methods);
+
+        /* Inherite super's s_methods(super of super) */
+        s_methods = scc.get_s_methods();
+        cc.inherite_methods(s_methods);
+
+        /* Set offsets */
+        cc.set_v_offset(scc.get_v_next_offset());
+        cc.set_m_offset(scc.get_m_next_offset());
+        
+        subtypes.put(derived_class, super_class);
+    }
+    
+    
     /*
-     * Given a class_name and a field type + name, it will store the field in class' content.
-     * Will be checked if the field is redecleared. If yes, then returns fatal error.
+     * Given a class_name and a variables type + name, it will store the variable in class' content.
+     * Will be checked if the variable is redecleared. If yes, then returns fatal error.
      * Correct store: 0,
      * Class doesnt exists: -1,
-     * Field is redecleared: -2.
+     * Variable redeclared: -2.
      */
-    public int add_class_field(String class_name, String type, String name){
+    public int add_class_variable(String class_name, String type, String name){
         /* Get class content */
         ClassContent cc = this.class_names.get(class_name);
         if(cc == null){ // class name not found
             return -1;
         }
-
-        Map<String, String> class_fields = cc.get_fields();
-        if(class_fields.containsKey(name)){ // check if name was redecleared
+        
+        /* Check if name was redecleared */
+        Map<String, String> class_variables = cc.get_variables();
+        if(class_variables.containsKey(name)){ 
             return -2;
         }
-
-        /* Add field and its offset */
-        class_fields.put(name, type);
-        cc.add_f_offset(type, name);
-
+        
+        /* Add variables and it's offset */
+        class_variables.put(name, type);
+        cc.add_v_offset(type, name);
+        
         /* If type is unknown, may be declared later. Save it to check after first visitor pass */
-        if(!primitive_t.contains(type)){ // check if type of field is primitive
+        if(!primitive_t.contains(type)){ // check if type of variable is primitive
             unknown_t.add(type);
         }
         return 0;
     }
-
     
+    
+    /* Given a class and a method's name and return type, checks if method is redecleared in class.
+     * Then the temp_methdo_pars are initialized, in order to keep methods return type and argument.
+     * Valid method: 0.
+     * Invalid Class: -1,
+     * Method Redeclared: -2,
+     */
     public int check_class_method(String class_name, String return_type, String name){
         /* Get class content */
         ClassContent cc = this.class_names.get(class_name);
@@ -143,64 +149,38 @@ public class SymbolTable{
         if(class_methods.containsKey(name)){ // check if method was redecleared
             return -2;
         }
-
+        
         /* Create new vector and place return type at 0 index */
         temp_method_pars = new Vector<>();
         temp_method_pars.add(return_type);
-
+        
         /* If type is unknown, may be declared later. Save it to check after first visitor pass */
-        if(!primitive_t.contains(return_type)){ // check if type of field is primitive
+        if(!primitive_t.contains(return_type)){ // check if type of variable is primitive
             unknown_t.add(return_type);
         }
         return 0;
     }
-
+    
+    /* Add given type to current method's arguments */
     public void add_method_par(String type){
-        temp_method_pars.add(type);
-
+        temp_method_pars.add(type); // push back type
+        
         /* If type is unknown, may be declared later. Save it to check after first visitor pass */
-        if(!primitive_t.contains(type)){ // check if type of field is primitive
+        if(!primitive_t.contains(type)){ // check if type of variable is primitive
             unknown_t.add(type);
         }
     }
-
-
-    /*
-     * After the first visitor pass, where all class types are collected. If a class has a field of
-     * class type, it should be stored in unknown set. All names in unknown set are checked if are 
-     * declared in class_names.
-     * No undefined: NULL,
-     * Undefined reference: undeclared_type;
-     */ 
-
-    public String check_unknown(){
-        /* Parse set */
-        for (String type : unknown_t) {
-            /* Check if type name is defined */
-            if(!class_names.containsKey(type)){
-                return type;
-            }
-        }
-
-        unknown_t.clear();
-        return null;
-    }
-
-
-    /* Push new string(type) to temporary method parameters */
-    public void add_temp_par(String type){
-        temp_method_pars.add(type);
-    }
-
-    /* Assignes to given class name the parameter vector */
+    
+    
+    /* Assignes to given class name the filled temp_parameter vector */
     public int add_class_method(String class_name, String method_name){
         /* Get class content */
         ClassContent cc = this.class_names.get(class_name);
         if(cc == null){ // class name not found
             return -1;
         }
-
-
+        
+        /* Check if method overloads super's class method */
         int result = overload_check(class_name, method_name);
         if(result < 0){
             return result;
@@ -213,9 +193,11 @@ public class SymbolTable{
             cc.add_m_offset(method_name);
         }
 
+        clear_temp_pars();
+
         return 0;
     }
-
+    
     /*
      * Given a class name and method, must check if method is overidding and not overloading.
      * First, it checks if class_name is derived and if yes checks if method_name is declared in super class.
@@ -228,13 +210,13 @@ public class SymbolTable{
         /* Get super class methods */
         ClassContent cc = this.class_names.get(class_name);
         Map<String, Vector<String>> s_methods = cc.get_s_methods();
-
+        
         /* Search if method is declared */
         Vector<String> method_pars = s_methods.get(method_name);
         if(method_pars == null){ // method not declared
             return 0;
         }
-
+        
         /* Check super's method pars with derived class method pars are the same */
         if(method_pars.size() != temp_method_pars.size()){
             return -1; // method overloading
@@ -242,43 +224,69 @@ public class SymbolTable{
         else{
             for(int i = 0; i < method_pars.size(); i++){ // check if all argument types are the same
                 if(!(method_pars.elementAt(i).equals(temp_method_pars.elementAt(i))))
-                    return -1; // found different type
-            }
+                return -1; // found different type
+                }
         }
-
+        
         return 1;
     }
-
-    /* Clears the temporary method parameters */
-    public void clear_temp_pars(){
-        temp_method_pars = null;
+    
+    /*
+    * After the first visitor pass, where all class types are collected. If a class has a variable/method of
+    * class type, it should be stored in unknown set. All names in unknown set are checked if are declared
+    * in class_names.
+    * No undefined: NULL,
+    * Undefined reference: undeclared_type;
+    */ 
+    public String check_unknown(){
+        /* Parse set */
+        for (String type : unknown_t) {
+            /* Check if type name is defined */
+            if(!class_names.containsKey(type)){
+                return type;
+            }
+        }
+        
+        unknown_t.clear();
+        return null;
     }
-
+     
+    /* Prints all classes' variables and methods offsets */
     public void print_offsets(){
-
         System.out.println("Printing Class Offsets:");
-        /* Print offset for all classes' fields and methods */
+        /* Print offset for all classes' variables and methods */
         for (Map.Entry<String, ClassContent> entry : this.class_names.entrySet()){
             String class_name = entry.getKey();
             System.out.println("\n\n- Class " + class_name + " -");
-
+            
             ClassContent cc = entry.getValue();
             
-            /* Print fields */
-            Vector<NameOffset> f_offsets = cc.get_f_offsets(); 
-            System.out.println("  -- Fields --");
+            /* Print variables */
+            Vector<NameOffset> v_offsets = cc.get_v_offsets(); 
+            System.out.println("  -- Variables --");
 
-            for(NameOffset field : f_offsets){
-                System.out.println("    " + class_name + "." + field.get_name() + " : " + field.get_offset());
+            for(NameOffset var : v_offsets){
+                System.out.println("    " + class_name + "." + var.get_name() + " : " + var.get_offset());
             }
 
             /* Print methods */
             Vector<NameOffset> m_offsets = cc.get_m_offsets(); 
             System.out.println("  -- Methods --");
-
-            for(NameOffset field : m_offsets){
-                System.out.println("    " + class_name + "." + field.get_name() + " : " + field.get_offset());
+            
+            for(NameOffset method : m_offsets){
+                System.out.println("    " + class_name + "." + method.get_name() + " : " + method.get_offset());
             }
         }
     }
+
+    /* Accesors */
+    public Map<String, ClassContent> get_class_names(){ return class_names; }
+    public Map<String, String> get_subtypes(){ return subtypes; }
+    
+    
+    /* Mutators */
+    /* Adds a new class_name to set and initialize its content */
+    public void store_class(String new_class){ class_names.put(new_class, new ClassContent()); } 
+    public void clear_temp_pars(){ temp_method_pars = null; }
+    
 }
