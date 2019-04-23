@@ -12,9 +12,11 @@ import visitor.GJDepthFirst;
 public class CollectVisitor extends GJDepthFirst<String, String>{
 
     SymbolTable symbol_table;
+    String cur_method; // name of method that visitor is currently in
 
     public CollectVisitor(SymbolTable st){
         symbol_table = st;
+        cur_method = null;
     }
 
 
@@ -98,12 +100,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     public String visit(ClassDeclaration n, String argu) throws Exception {        
         /* Collect class name */
         String class_name = n.f1.accept(this, argu);
-        int r = symbol_table.add_class(class_name);
-        if(r == 0)
+        int result = symbol_table.add_class(class_name);
+        if(result == 0)
             System.out.println(class_name + " was succesfully added to Symbol Table");
         else
-            throw new Exception("Class [ " + class_name + " ] is already declared.");
-            //System.out.println("** " + class_name + " was already declared");
+            throw new Exception("Error in declaration of class " + class_name + " : Class with the same name is already declared.");
 
         n.f3.accept(this, class_name);
         n.f4.accept(this, class_name);
@@ -134,10 +135,9 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         if(r == 0)
             System.out.println(class_name + " which extends " + super_name + " was succesfully added to Symbol Table");
         else if(r == -1)
-            throw new Exception("Class [ " + class_name + " ] is declared before.");
-            //System.out.println("** " + class_name + " was already declared");
+            throw new Exception("Error in declaration of class " + class_name + ": Class with the same name is already declared.");
         else if(r == -2)
-            throw new Exception("Superclass [ " + super_name + " ] of class [ " + class_name + " ] is not declared.");
+            throw new Exception("Error in declaration of class " + class_name + ": Super class " + super_name + " is not declared.");
 
 
         n.f5.accept(this, class_name);
@@ -159,9 +159,9 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
             if(result == 0)
                 System.out.println("\t" + type + " " + name + " was succesfully added as " + argu + " Variable.");
             else if(result == -1)
-                throw new Exception("Error During Variable Declaration [ " + name + " ] in class [ " + argu + " ]: Class not found.");
+                throw new Exception("Error in declaration of class " + argu + " : Class not found.");
             else if(result == -2)
-                throw new Exception("Field [ " + name + " ] is redeclared in class [ " + argu + " ].");
+                throw new Exception("Error in declaration of class " + argu + " : Variable " + name + " is already declared.");
 
                 // System.out.println("\t** " + type + " " + name + " is redecleared in class " + argu);
         } 
@@ -192,14 +192,13 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         
         /* Get method name */
         String name = n.f2.accept(this, argu);
-
+       
+        cur_method = name;
         int result = symbol_table.check_class_method(argu, return_type, name);
         if(result == -1)
-            throw new Exception("Error During Method Declaration [ " + name + "() ] in class [ " + argu + " ]: Class not found.");
-            //System.out.println("\t** Something went wrong with " + return_type + " " + name + " declaration of class " + argu);
+            throw new Exception("Error in declaration of method " + name + " of class " + argu + ": Class not found.");
         else if(result == -2)
-            throw new Exception("Method [ " + name + "() ] is redeclared in class [ " + argu + " ].");
-            // System.out.println("\t** " + return_type + " " + name + " is redecleared in class " + argu);
+            throw new Exception("Error in declaration of method " + name + " of class " + argu + ": Method is already declared.");
         
         n.f4.accept(this, argu);
         
@@ -207,10 +206,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         if(result == 0)
             System.out.println("\t" + return_type + " " + name + " was succesfully added to " + argu + " Methods");
         else
-            throw new Exception("Method [ " + name + "() ] is redeclared in superclass of class [ " + argu + " ].");
+            throw new Exception("Error in declaration of method " + name + " of class " + argu + ": [Invalid Overloading]Method is already declared in super class with different types.");
             // System.out.println("\t**" + return_type + " " + name + " is overloading super class of " + argu);
 
         symbol_table.clear_temp_pars();
+        cur_method = null;
         return null;
     }
 
@@ -219,10 +219,9 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     * f1 -> FormalParameterTail()
     */
     public String visit(FormalParameterList n, String argu) throws Exception {
-        String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
-        return _ret;
+        return null; // if there is an invalid argument, it is return else null
     }
 
     /**
@@ -231,9 +230,12 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     */
     public String visit(FormalParameter n, String argu) throws Exception {
         String type = n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
+        String name = n.f1.accept(this, argu);
         
-        symbol_table.add_method_par(type);
+        int r = symbol_table.add_method_par(type, name);
+        if(r != 0)
+            throw new Exception("Error in declaration of method " + cur_method + "() in class " + argu + ": Argument " + name + " is already declared.");
+
         return null;
     }
 

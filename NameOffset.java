@@ -9,8 +9,8 @@
 
 /* Class that implements the pair of a class' variable/method offset. Holds the name and offset */
 public class NameOffset{
-    private String name; // name of field/method
-    private int offset; // offset of field/method
+    private String name; // name of variable/method
+    private int offset; // offset of variable/method
 
     /* Constructor */
     public NameOffset(String name, int offset){

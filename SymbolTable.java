@@ -18,7 +18,7 @@ public class SymbolTable{
     Map<String, String> subtypes; // Keeps all the pairs of <derived class, super class>
     Set<String> unknown_t; // Set that holds unknown types declared in classes, to be checked later
 
-    Vector<String> temp_method_pars; // Vector that holds parameters of the next method to be stored
+    Vector<NameType> temp_method_pars; // Vector that holds parameters of the next method to be stored
 
 
     
@@ -85,7 +85,7 @@ public class SymbolTable{
         cc.inherite_variables(s_variables);
         
         /* Inherite super's methods */ 
-        Map<String, Vector<String>> s_methods = scc.get_methods();
+        Map<String, Vector<NameType>> s_methods = scc.get_methods();
         cc.inherite_methods(s_methods);
 
         /* Inherite super's s_methods(super of super) */
@@ -145,14 +145,14 @@ public class SymbolTable{
             return -1;
         }
 
-        Map<String, Vector<String>> class_methods = cc.get_methods();
+        Map<String, Vector<NameType>> class_methods = cc.get_methods();
         if(class_methods.containsKey(name)){ // check if method was redecleared
             return -2;
         }
         
         /* Create new vector and place return type at 0 index */
         temp_method_pars = new Vector<>();
-        temp_method_pars.add(return_type);
+        temp_method_pars.add(new NameType(null, return_type));
         
         /* If type is unknown, may be declared later. Save it to check after first visitor pass */
         if(!primitive_t.contains(return_type)){ // check if type of variable is primitive
@@ -161,14 +161,25 @@ public class SymbolTable{
         return 0;
     }
     
-    /* Add given type to current method's arguments */
-    public void add_method_par(String type){
-        temp_method_pars.add(type); // push back type
+    /* Add given type to current method's arguments, if there is no redeclaration
+     * Valid argument : 0
+     * Argument redeclaration: -1
+     */
+    public int add_method_par(String type, String name){
+
+        /* Check if argument is redeclared */
+        for(NameType arg : temp_method_pars){
+            if(name.equals(arg.get_name())) // found argument with the same name
+                return -1;
+        }
+        temp_method_pars.add(new NameType(name, type)); // push back type
         
         /* If type is unknown, may be declared later. Save it to check after first visitor pass */
         if(!primitive_t.contains(type)){ // check if type of variable is primitive
             unknown_t.add(type);
         }
+
+        return 0;
     }
     
     
@@ -209,10 +220,10 @@ public class SymbolTable{
     public int overload_check(String class_name, String method_name){
         /* Get super class methods */
         ClassContent cc = this.class_names.get(class_name);
-        Map<String, Vector<String>> s_methods = cc.get_s_methods();
+        Map<String, Vector<NameType>> s_methods = cc.get_s_methods();
         
         /* Search if method is declared */
-        Vector<String> method_pars = s_methods.get(method_name);
+        Vector<NameType> method_pars = s_methods.get(method_name);
         if(method_pars == null){ // method not declared
             return 0;
         }
@@ -223,8 +234,10 @@ public class SymbolTable{
         }
         else{
             for(int i = 0; i < method_pars.size(); i++){ // check if all argument types are the same
-                if(!(method_pars.elementAt(i).equals(temp_method_pars.elementAt(i))))
-                return -1; // found different type
+                String s_arg_type = method_pars.elementAt(i).get_type();
+                String arg_type = temp_method_pars.elementAt(i).get_type();
+                if(!(arg_type.equals(s_arg_type)))
+                    return -1; // found different type
                 }
         }
         

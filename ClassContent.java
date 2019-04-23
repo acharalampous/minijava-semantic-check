@@ -13,8 +13,8 @@ public class ClassContent{
     Map<String, String> variables; // Maps the variables' name of a Class with it's type
     Map<String, String> s_variables; // Like variables, but holds variables of superclasses
 
-    Map<String, Vector<String>> methods; // Maps the method's name with its return type and arguments. Always on 0 its the return type
-    Map<String, Vector<String>> s_methods; // Like methods, but holds methods of superclasses    
+    Map<String, Vector<NameType>> methods; // Maps the method's name with its return type and arguments. Always on 0 its the return type
+    Map<String, Vector<NameType>> s_methods; // Like methods, but holds methods of superclasses    
     
     Vector<NameOffset> v_offsets; // Vector that holds Pairs of <variable, offset>
     Vector<NameOffset> m_offsets; // Vector that holds Pairs of <method, offset>
@@ -70,19 +70,19 @@ public class ClassContent{
     public void set_v_offset(int off){ this.v_next_offset = off; }
     public void set_m_offset(int off){ this.m_next_offset = off; }
 
-    public void add_method(String name, Vector<String> parameters){ methods.put(name, parameters); }
-    public void add_s_method(String name, Vector<String> parameters){ s_methods.put(name, parameters); }
+    public void add_method(String name, Vector<NameType> parameters){ methods.put(name, parameters); }
+    public void add_s_method(String name, Vector<NameType> parameters){ s_methods.put(name, parameters); }
     /* Store super's class variables/methods in class contents */
     public void inherite_variables(Map<String, String> s_variables){ this.s_variables.putAll(s_variables); }
-    public void inherite_methods(Map<String, Vector<String>> s_methods){ this.s_methods.putAll(s_methods); }
+    public void inherite_methods(Map<String, Vector<NameType>> s_methods){ this.s_methods.putAll(s_methods); }
     
 
     /* Accesors */
     public Map<String, String> get_variables(){ return variables; }
     public Map<String, String> get_s_variables(){ return s_variables; }
 
-    public Map<String, Vector<String>> get_methods(){ return methods; }
-    public Map<String, Vector<String>> get_s_methods(){ return s_methods; }
+    public Map<String, Vector<NameType>> get_methods(){ return methods; }
+    public Map<String, Vector<NameType>> get_s_methods(){ return s_methods; }
 
     public int get_v_next_offset(){ return v_next_offset; }
     public int get_m_next_offset(){ return m_next_offset; }
