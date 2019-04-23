@@ -157,11 +157,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
             /* Store var */
             int result = symbol_table.add_class_variable(argu, type, name);
             if(result == 0)
-                System.out.println("\t" + type + " " + name + " was succesfully added to " + argu + " Variable");
+                System.out.println("\t" + type + " " + name + " was succesfully added as " + argu + " Variable.");
             else if(result == -1)
-                throw new Exception("Error During Variable Declaration [ " + name + "() ] in class [ " + argu + " ]: Class not found.");
+                throw new Exception("Error During Variable Declaration [ " + name + " ] in class [ " + argu + " ]: Class not found.");
             else if(result == -2)
-                throw new Exception("Field [ " + name + "() ] is redeclared in class [ " + argu + " ].");
+                throw new Exception("Field [ " + name + " ] is redeclared in class [ " + argu + " ].");
 
                 // System.out.println("\t** " + type + " " + name + " is redecleared in class " + argu);
         } 

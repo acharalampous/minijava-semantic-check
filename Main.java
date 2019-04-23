@@ -28,7 +28,7 @@ public class Main {
 
             String err_type = symbol_table.check_unknown();
             if(err_type != null){
-                System.out.println("Undefined reference to " + err_type);
+                throw new Exception("Undefined reference to type " + err_type + ".");
             }
 
             symbol_table.print_offsets();
