@@ -15,7 +15,7 @@ public class SymbolTable{
 
     Set<String> primitive_t; // Primitive types of language (int, boolean, int[])
     Map<String, ClassContent> class_names; // Contains all class_names(types) declared in src file
-    Map<String, String> subtypes; // Keeps all the pairs of <derived class, super class>
+    Map<String, Vector<String>> subtypes; // Keeps all the pairs of <derived class, super classes> 
     Set<String> unknown_t; // Set that holds unknown types declared in classes, to be checked later
 
     Vector<NameType> temp_method_pars; // Vector that holds parameters of the next method to be stored
@@ -96,7 +96,19 @@ public class SymbolTable{
         cc.set_v_offset(scc.get_v_next_offset());
         cc.set_m_offset(scc.get_m_next_offset());
         
-        subtypes.put(derived_class, super_class);
+        /* Create vector that will keep all superclasses of derived_class */
+        Vector<String> superclasses = new Vector<>();
+        superclasses.add(super_class); // insert "mother" class
+
+        Vector<String> s_superclasses = subtypes.get(super_class);
+        /* If there are "grandmother" classes, store them as superclasses of derived_class */
+        if(s_superclasses != null){
+            for (String s_class : s_superclasses){
+                superclasses.add(s_class);
+            }
+        }
+
+        subtypes.put(derived_class, superclasses);
     }
     
     
@@ -294,7 +306,7 @@ public class SymbolTable{
 
     /* Accesors */
     public Map<String, ClassContent> get_class_names(){ return class_names; }
-    public Map<String, String> get_subtypes(){ return subtypes; }
+    public Map<String, Vector<String>> get_subtypes(){ return subtypes; }
     
     
     /* Mutators */
