@@ -1,6 +1,5 @@
 /*******************************/
 /* CollectVisitor.java */
-
 /* Name:    Andreas Charalampous
  * A.M :    1115201500195
  * e-mail:  sdi1500195@di.uoa.gr
@@ -11,8 +10,8 @@ import visitor.GJDepthFirst;
 
 public class CollectVisitor extends GJDepthFirst<String, String>{
 
-    SymbolTable symbol_table;
-    String cur_method; // name of method that visitor is currently in
+    private SymbolTable symbol_table;
+    private String cur_method; // name of method that visitor is currently in
 
     public CollectVisitor(SymbolTable st){
         symbol_table = st;

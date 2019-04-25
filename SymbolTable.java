@@ -19,6 +19,7 @@ public class SymbolTable{
     Set<String> unknown_t; // Set that holds unknown types declared in classes, to be checked later
 
     Vector<NameType> temp_method_pars; // Vector that holds parameters of the next method to be stored
+    Map<String, String> current_scope; // Holds all the declared variables with their type, in current scope
 
 
     
@@ -29,6 +30,7 @@ public class SymbolTable{
         primitive_t = new HashSet<>(Arrays.asList("int", "boolean", "int[]"));
         unknown_t = new HashSet<>();
         temp_method_pars = null;
+        current_scope = null;
     }
     
 
@@ -304,6 +306,39 @@ public class SymbolTable{
         }
     }
 
+    /* Inserts a new variable name and type in current scope. 
+     * If the name is redeclared or undefined type, return error.
+     * Valid Declaration: 0.
+     * Redeclaration: -1,
+     * Undefined type: -2,
+     */
+
+    public int insert(String type, String name){
+        /* Check for redeclaration */
+        if(current_scope.containsKey(name))
+            return -1;
+        
+        /* Check if valid type(primitive or class) */
+        if((!primitive_t.contains(type)) && (!class_names.containsKey(type)))
+            return -2;
+
+        /* Insert variable in symbol table */
+        current_scope.put(name, type);
+
+        return 0;
+    }
+
+    /* Inserts given's class method's arguments in current scope hash map */
+    public void insert_arguments(String class_name, String method_name){
+        ClassContent cc = class_names.get(class_name);
+        Vector<NameType> arguments = (cc.get_methods()).get(method_name);
+        
+        /* Add every argument in hashmap */
+        for(NameType arg : arguments){
+            insert(arg.get_type(), arg.get_name());
+        }
+    }
+    
     /* Accesors */
     public Map<String, ClassContent> get_class_names(){ return class_names; }
     public Map<String, Vector<String>> get_subtypes(){ return subtypes; }
@@ -313,5 +348,6 @@ public class SymbolTable{
     /* Adds a new class_name to set and initialize its content */
     public void store_class(String new_class){ class_names.put(new_class, new ClassContent()); } 
     public void clear_temp_pars(){ temp_method_pars = null; }
-    
+    public void enter_scope(){ current_scope = new HashMap<>(); }
+    public void exit_scope(){ current_scope = null;}
 }

@@ -18,8 +18,8 @@ public class Main {
 
             SymbolTable symbol_table = new SymbolTable();
 
-            CollectVisitor vis = new CollectVisitor(symbol_table);
-            root.accept(vis, null);
+            CollectVisitor collect_v = new CollectVisitor(symbol_table);
+            root.accept(collect_v, null);
 
             System.out.println("\n\nDone Semantic Check.\n\n");
 
@@ -31,6 +31,10 @@ public class Main {
                 throw new Exception("Undefined reference to type " + err_type + ".");
             }
 
+            CheckVisitor check_v = new CheckVisitor(symbol_table);
+
+            root.accept(check_v, null);
+            
             symbol_table.print_offsets();
         }
         catch(ParseException ex){
