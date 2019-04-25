@@ -103,8 +103,6 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f7 -> "}"
       */
     public String visit(ClassExtendsDeclaration n, String argu) throws Exception {
-        String _ret = null;
-        n.f0.accept(this, argu);
         cur_class =  n.f1.accept(this, argu);
         
 		//n.f3.accept(this, argu);
@@ -112,7 +110,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
 		n.f6.accept(this, argu);
 		
 		cur_class = null;
-		return _ret;
+		return null;
     }
   
      /**
@@ -156,7 +154,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f12 -> "}"
       */
      public String visit(MethodDeclaration n, String argu) throws Exception {
-        String _ret=null;
+        String _ret = null;
         String type = n.f1.accept(this, argu);
         cur_method = n.f2.accept(this, argu);
 	
@@ -541,21 +539,21 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f0 -> <INTEGER_LITERAL>
       */
      public String visit(IntegerLiteral n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
+        return n.f0.tokenImage; // must be turned into integer
      }
   
      /**
       * f0 -> "true"
       */
      public String visit(TrueLiteral n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
+        return "true";
      }
   
      /**
       * f0 -> "false"
       */
      public String visit(FalseLiteral n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
+        return "false";
      }
   
      /**
@@ -569,7 +567,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f0 -> "this"
       */
      public String visit(ThisExpression n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
+        return "this";
      }
   
      /**
@@ -580,13 +578,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f4 -> "]"
       */
      public String visit(ArrayAllocationExpression n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
-        n.f4.accept(this, argu);
-        return _ret;
+        String type = n.f3.accept(this, argu);
+		if(!type.equals("int"))
+			if (cur_class == null) // in main
+				throw new Exception( "Error during new array operation in Main method : Size of table must be an int value.");
+			else // in class method
+				throw new Exception("Error during new operation in method " + cur_method + " of class " + cur_class + " : Size of table must be an int value.");
+		
+        return null;
      }
   
      /**
@@ -596,12 +595,15 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f3 -> ")"
       */
      public String visit(AllocationExpression n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
-        return _ret;
+        String type = n.f1.accept(this, argu);
+		/* Check if valid type */
+		if(!symbol_table.is_valid_type(type))
+			if(cur_class == null) // in main
+				throw new Exception("Error during new operation in Main method : Undefined reference to type " + type + ".");
+			else // in class method
+				throw new Exception("Error during new operation in method " + cur_method + " of class " + cur_class + " : Undefined reference to type " + type + ".");
+		
+        return null;
      }
   
      /**
@@ -609,8 +611,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f1 -> Clause()
       */
      public String visit(NotExpression n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
+		String _ret = null;
         n.f1.accept(this, argu);
         return _ret;
      }
@@ -620,12 +621,9 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f1 -> Expression()
       * f2 -> ")"
       */
-     public String visit(BracketExpression n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        return _ret;
-     }
+	public String visit(BracketExpression n, String argu) throws Exception {
+		String ret = n.f1.accept(this, argu);
+        return ret;
+	}
 
 }

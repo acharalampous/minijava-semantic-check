@@ -338,6 +338,10 @@ public class SymbolTable{
             insert(arg.get_type(), arg.get_name());
         }
     }
+
+    public boolean is_valid_type(String type){
+        return class_names.containsKey(type);
+    }
     
     /* Accesors */
     public Map<String, ClassContent> get_class_names(){ return class_names; }
