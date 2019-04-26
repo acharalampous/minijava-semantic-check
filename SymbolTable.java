@@ -13,14 +13,18 @@ import java.util.*;
 
 public class SymbolTable{
 
-    Set<String> primitive_t; // Primitive types of language (int, boolean, int[])
-    Map<String, ClassContent> class_names; // Contains all class_names(types) declared in src file
-    Map<String, Vector<String>> subtypes; // Keeps all the pairs of <derived class, super classes> 
-    Set<String> unknown_t; // Set that holds unknown types declared in classes, to be checked later
+    private Set<String> primitive_t; // Primitive types of language (int, boolean, int[])
+    private Map<String, ClassContent> class_names; // Contains all class_names(types) declared in src file
+    private Map<String, Vector<String>> subtypes; // Keeps all the pairs of <derived class, super classes> 
+    private Set<String> unknown_t; // Set that holds unknown types declared in classes, to be checked later
 
-    Vector<NameType> temp_method_pars; // Vector that holds parameters of the next method to be stored
-    Map<String, String> current_scope; // Holds all the declared variables with their type, in current scope
+    private Vector<NameType> temp_method_pars; // Vector that holds parameters of the next method to be stored
 
+
+    private Map<String, String> current_scope; // Holds all the declared variables with their type, in current scope
+    
+    // Stack that holds parameters of methods to be checked. It's a stack for the case of methods in methods_args */ 
+    private Vector<Vector<String>> curr_methods_pars; 
 
     
     /* Constructor */
@@ -31,6 +35,7 @@ public class SymbolTable{
         unknown_t = new HashSet<>();
         temp_method_pars = null;
         current_scope = null;
+        curr_methods_pars = new Vector<>();
     }
     
 
@@ -339,10 +344,105 @@ public class SymbolTable{
         }
     }
 
+    /*
+     * Checks if given type is of class type, 
+     * Is a class type: 1,
+     * Is not: 0,
+     */
     public boolean is_valid_type(String type){
         return class_names.containsKey(type);
     }
+
+    /* 
+     * Returns the type of given variable, by looking in current scope.
+     * Variable is declared: variable type,
+     * Variable not declared: null
+     */
+    public String lookup(String variable_name, String cur_scope){
+        /* Check local scope */
+        String variable_type = current_scope.get(variable_name);
+
+        if(variable_type == null){ // variable is not locally declared
+            if(cur_scope == null) // if in main return null
+                return null;
+            else{ // else check in class' variables
+                ClassContent cc = class_names.get(cur_scope);
+
+                /* Get class' variables */
+                variable_type = (cc.get_variables()).get(variable_name);
+                if(variable_type != null){
+                    return variable_type;
+                }
+                else{ // must check inheritanced variables of class
+                    variable_type = (cc.get_s_variables()).get(variable_name);
+                    return variable_type;
+                }
+            }
+        }
+
+        return variable_type;
+    }
+
+
     
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    /* Inserts new "level" in method parameters */
+    public void push_back_method(){
+        Vector<String> new_v = new Vector<>();
+        new_v.add(null); // match the size of method declared(at 0 is the return type)
+        curr_methods_pars.add(new_v);
+        
+    }
+
+    public Vector<String> pop_back_method(){
+        int v_size = curr_methods_pars.size();
+        if(v_size != 0){
+            Vector<String> r = curr_methods_pars.elementAt(v_size - 1);
+            curr_methods_pars.remove(v_size - 1);
+            return r;
+        }
+        return null;
+    }
+
+    /* Insert new arg in innermost method */
+    public void insert_back_arg(String par){
+        int v_size = curr_methods_pars.size();
+        if(v_size != 0){
+            (curr_methods_pars.get(v_size - 1)).add(par);
+        }
+    }
+
+    public String find_method(String class_name, String method_name){
+        ClassContent cc = class_names.get(class_name);
+
+        /* Check class' methods */
+        Vector<NameType> method_args = (cc.get_methods()).get(method_name);
+        if(method_args == null){
+            /* If not found, check inherited methods */
+            method_args = (cc.get_s_methods()).get(method_name);
+            if(method_args == null)
+                return null;
+        }
+
+        /* Get method pars */
+        Vector<String> called_method = pop_back_method();
+        if(called_method.size() != method_args.size())
+            return null;
+        
+        for(int i = 1; i < called_method.size(); i++){ // check if all argument types are the same
+            String c_arg_type = called_method.elementAt(i);
+            String arg_type = method_args.elementAt(i).get_type();
+            if(!(c_arg_type.equals(arg_type)))
+                return null; // found different type
+        }
+
+        return method_args.elementAt(0).get_type(); // return type of method
+    }
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+
     /* Accesors */
     public Map<String, ClassContent> get_class_names(){ return class_names; }
     public Map<String, Vector<String>> get_subtypes(){ return subtypes; }
