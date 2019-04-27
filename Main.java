@@ -10,16 +10,20 @@ public class Main {
         if(file_name.length() < 6) // invalid file type
             throw new Exception("Cannot perform Semantic Analysis. Invalid File Type given.");
 
+            
         String file_type = file_name.substring(file_name.length() - 5, file_name.length());
-        if(file_type != ".java"){ // invalid file type
+        if(!file_type.equals(".java")){ // invalid file type
             throw new Exception("Cannot perform Semantic Analysis. Invalid File Type given.");
+            
+        }
 
-        }        
+        /* Find index of file_name in string(if path specified) */
+        int file_index = file_name.lastIndexOf("/");
 
-        return file_name.substring(0, file_name.length() - 6); // return file name, without .java extension
+        return file_name.substring(file_index + 1, file_name.length() - 5); // return file name, without .java extension
     }
 
-    public static void main (String [] args){
+    public static void main (String[] args){
         if(args.length < 1){
             System.err.println("Usage: java Main <inputFile1> <inputFile2> .. <inputFileN>");
             System.exit(1);
@@ -30,7 +34,7 @@ public class Main {
         for(int i = 0; i < args.length; i++){
             FileInputStream fis = null;
             try{
-                System.out.println("\n\n\n** " + args[i] + "**");
+                System.out.println("\n\n\n** " + args[i] + " **");
                 String file_name = file_type_check(args[i]);
 
                 fis = new FileInputStream(args[i]);
@@ -45,7 +49,7 @@ public class Main {
                 CollectVisitor collect_v = new CollectVisitor(symbol_table, file_name);
                 root.accept(collect_v, null);
         
-                System.out.println("\tProgram Symanticly Check.");
+                System.out.println("\tProgram Symanticly Checked.");
             
                 String err_type = symbol_table.check_unknown();
                 if(err_type != null){

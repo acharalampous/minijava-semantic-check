@@ -63,7 +63,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         String _ret=null;
         n.f0.accept(this, argu);
         String class_name = n.f1.accept(this, argu);
-        if(class_name != this.file_name)
+        if(!class_name.equals(this.file_name))
             throw new Exception("Error in file: Incorrect public class name '" + class_name + "'. Should be stored in a file named " + class_name + ".java, instead of " + file_name);
         n.f2.accept(this, argu);
         n.f3.accept(this, argu);

@@ -331,7 +331,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     */
    public String visit(IfStatement n, String argu) throws Exception {
    String type = n.f2.accept(this, argu);
-      if(type != "boolean"){ // Condition of if statement must be of type boolean
+      if(!type.equals("boolean")){ // Condition of if statement must be of type boolean
          if(cur_class == null) // in main
             throw new Exception("Error during If Statement in Main method : Incompatible type of condition: '" + type + "' cannot be converted to boolean.");
          else // in class method

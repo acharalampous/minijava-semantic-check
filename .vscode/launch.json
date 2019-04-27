@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "args": "examples/BinaryTree.java examples/myExample.java examples/myExample2.java",
+            "args": "examples/BinaryTree.java examples/myExample.java examples/myExample2.java myEx.java",
             "type": "java",
             "name": "Debug (Launch) - Current File",
             "request": "launch",
