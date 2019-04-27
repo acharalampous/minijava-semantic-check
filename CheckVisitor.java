@@ -28,348 +28,342 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     // User-generated visitor methods below
     //
 
-    /**
-     * f0 -> MainClass()
-     * f1 -> ( TypeDeclaration() )*
-     * f2 -> <EOF>
-     */
-    public String visit(Goal n, String argu) throws Exception {
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        return null;
-    }
+   /**
+    * f0 -> MainClass()
+    * f1 -> ( TypeDeclaration() )*
+    * f2 -> <EOF>
+    */
+   public String visit(Goal n, String argu) throws Exception {
+      n.f0.accept(this, argu);
+      n.f1.accept(this, argu);
+      return null;
+   }
   
-     /**
-      * f0 -> "class"
-      * f1 -> Identifier()
-      * f2 -> "{"
-      * f3 -> "public"
-      * f4 -> "static"
-      * f5 -> "void"
-      * f6 -> "main"
-      * f7 -> "("
-      * f8 -> "String"
-      * f9 -> "["
-      * f10 -> "]"
-      * f11 -> Identifier()
-      * f12 -> ")"
-      * f13 -> "{"
-      * f14 -> ( VarDeclaration() )*
-      * f15 -> ( Statement() )*
-      * f16 -> "}"
-      * f17 -> "}"
-      */
-     public String visit(MainClass n, String argu) throws Exception {
-        String _ret=null;
-		n.f1.accept(this, argu); // check if class has same name with file
-		
-		symbol_table.enter_scope(); // initialize scope hashmap
-		n.f14.accept(this, argu);
-		n.f15.accept(this, argu);
-		symbol_table.exit_scope();
-        return _ret;
-    }
+   /**
+    * f0 -> "class"
+    * f1 -> Identifier()
+    * f2 -> "{"
+    * f3 -> "public"
+    * f4 -> "static"
+    * f5 -> "void"
+    * f6 -> "main"
+    * f7 -> "("
+    * f8 -> "String"
+    * f9 -> "["
+    * f10 -> "]"
+    * f11 -> Identifier()
+    * f12 -> ")"
+    * f13 -> "{"
+    * f14 -> ( VarDeclaration() )*
+    * f15 -> ( Statement() )*
+    * f16 -> "}"
+    * f17 -> "}"
+    */
+   public String visit(MainClass n, String argu) throws Exception {   
+      symbol_table.enter_scope(); // initialize scope hashmap
+      
+      n.f14.accept(this, argu);
+      n.f15.accept(this, argu);
+      
+      symbol_table.exit_scope();
+      return null;
+   }
   
-    /**
-     * f0 -> ClassDeclaration()
-     *       | ClassExtendsDeclaration()
-     */
-    public String visit(TypeDeclaration n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
-    }
+   /**
+    * f0 -> ClassDeclaration()
+    *       | ClassExtendsDeclaration()
+    */
+   public String visit(TypeDeclaration n, String argu) throws Exception {
+      return n.f0.accept(this, argu);
+   }
   
-    /**
-     * f0 -> "class"
-     * f1 -> Identifier()
-     * f2 -> "{"
-     * f3 -> ( VarDeclaration() )*
-     * f4 -> ( MethodDeclaration() )*
-     * f5 -> "}"
-     */
-    public String visit(ClassDeclaration n, String argu) throws Exception {
-        cur_class = n.f1.accept(this, argu); // get class name
-		n.f4.accept(this, argu);
-		cur_class = null;
-        return null;
-    }
+   /**
+    * f0 -> "class"
+    * f1 -> Identifier()
+    * f2 -> "{"
+    * f3 -> ( VarDeclaration() )*
+    * f4 -> ( MethodDeclaration() )*
+    * f5 -> "}"
+    */
+   public String visit(ClassDeclaration n, String argu) throws Exception {
+      cur_class = n.f1.accept(this, argu); // get class name
+      
+      n.f4.accept(this, argu);
+      
+      cur_class = null;
+      return null;
+   }
   
-     /**
-      * f0 -> "class"
-      * f1 -> Identifier()
-      * f2 -> "extends"
-      * f3 -> Identifier()
-      * f4 -> "{"
-      * f5 -> ( VarDeclaration() )*
-      * f6 -> ( MethodDeclaration() )*
-      * f7 -> "}"
-      */
-    public String visit(ClassExtendsDeclaration n, String argu) throws Exception {
-        cur_class =  n.f1.accept(this, argu);
-        
-		//n.f3.accept(this, argu);
-		
-		n.f6.accept(this, argu);
-		
-		cur_class = null;
-		return null;
-    }
+   /**
+    * f0 -> "class"
+    * f1 -> Identifier()
+    * f2 -> "extends"
+    * f3 -> Identifier()
+    * f4 -> "{"
+    * f5 -> ( VarDeclaration() )*
+    * f6 -> ( MethodDeclaration() )*
+    * f7 -> "}"
+    */
+   public String visit(ClassExtendsDeclaration n, String argu) throws Exception {
+      cur_class =  n.f1.accept(this, argu);
+         
+      n.f6.accept(this, argu);
+   
+      cur_class = null;
+      return null;
+   }
   
-     /**
-      * f0 -> Type()
-      * f1 -> Identifier()
-      * f2 -> ";"
-      */
-    public String visit(VarDeclaration n, String argu) throws Exception {
+   /**
+    * f0 -> Type()
+    * f1 -> Identifier()
+    * f2 -> ";"
+    */
+   public String visit(VarDeclaration n, String argu) throws Exception {
 		String type = n.f0.accept(this, argu);
 		String name = n.f1.accept(this, argu);
 
 		int result = symbol_table.insert(type, name);
 		if(result == -1) // redeclaration
 			if(cur_class == null) // in main
-				throw new Exception("Error during declaration of " + type + " " + name + " in Main method : " + name + " is already declared");
+				throw new Exception("Error during declaration of " + type + " " + name + " in Main method: " + name + " is already declared");
 			else // in class method
-				throw new Exception("Error during declaration of " + type + " " + name + " in method " + cur_method + " of class " + cur_class + " : " + name + " is already declared");
+				throw new Exception("Error during declaration of " + type + " " + name + " in method " + cur_method + "() of class " + cur_class + ": " + name + " is already declared");
 		else if(result == -2) // undefined type
 			if(cur_class == null) // in main
-				throw new Exception("Error during declaration of " + type + " " + name + " in Main method : Undefined reference to type " + type + "." );
+				throw new Exception("Error during declaration of " + type + " " + name + " in Main method: Unknown type '" + type + "'" );
 			else // in class method
-				throw new Exception("Error during declaration of " + type + " " + name + " in method " + cur_method + " of class " + cur_class + " : Undefined reference to type " + type + ".");
+            throw new Exception("Error during declaration of " + type + " " + name + " in method " + cur_method + "() of class " + cur_class + ": Unknown type " + type + "'");
 
 
 		return null;
 	}
   
-     /**
-      * f0 -> "public"
-      * f1 -> Type()
-      * f2 -> Identifier()
-      * f3 -> "("
-      * f4 -> ( FormalParameterList() )?
-      * f5 -> ")"
-      * f6 -> "{"
-      * f7 -> ( VarDeclaration() )*
-      * f8 -> ( Statement() )*
-      * f9 -> "return"
-      * f10 -> Expression()
-      * f11 -> ";"
-      * f12 -> "}"
-      */
-     public String visit(MethodDeclaration n, String argu) throws Exception {
-        String _ret = null;
-        String type = n.f1.accept(this, argu);
-        cur_method = n.f2.accept(this, argu);
-	
-		symbol_table.enter_scope(); // initialize scope hashmap
-		symbol_table.insert_arguments(cur_class, cur_method); // store arguments in hashmap
+   /**
+    * f0 -> "public"
+    * f1 -> Type()
+    * f2 -> Identifier()
+    * f3 -> "("
+    * f4 -> ( FormalParameterList() )?
+    * f5 -> ")"
+    * f6 -> "{"
+    * f7 -> ( VarDeclaration() )*
+    * f8 -> ( Statement() )*
+    * f9 -> "return"
+    * f10 -> Expression()
+    * f11 -> ";"
+    * f12 -> "}"
+    */
+   public String visit(MethodDeclaration n, String argu) throws Exception {
+      String type = n.f1.accept(this, argu); // return type
+      cur_method = n.f2.accept(this, argu); // name of method
 
-		
-		n.f7.accept(this, argu);
-        n.f8.accept(this, argu);
-		String return_type = n.f10.accept(this, argu);
-		if(return_type != type)
-			throw new Exception("Error in method " + cur_method + " of class" + cur_class + " : Invalid return type.");
+      symbol_table.enter_scope(); // initialize scope hashmap
+      symbol_table.insert_arguments(cur_class, cur_method); // store arguments in hashmap
 
-		symbol_table.exit_scope();
-		
-		return _ret;
-     }
-  
-     /**
-      * f0 -> FormalParameter()
-      * f1 -> FormalParameterTail()
-      */
-     public String visit(FormalParameterList n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-		n.f1.accept(this, argu);
-        return _ret;
-     }
-  
-     /**
-      * f0 -> Type()
-      * f1 -> Identifier()
-      */
-     public String visit(FormalParameter n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        return _ret;
-     }
-  
-     /**
-      * f0 -> ( FormalParameterTerm() )*
-      */
-     public String visit(FormalParameterTail n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
-     }
-  
-     /**
-      * f0 -> ","
-      * f1 -> FormalParameter()
-      */
-     public String visit(FormalParameterTerm n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        return _ret;
-     }
-  
-     /**
-      * f0 -> ArrayType()
-      *       | BooleanType()
-      *       | IntegerType()
-      *       | Identifier()
-      */
-     public String visit(Type n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
-     }
-  
-     /**
-      * f0 -> "int"
-      * f1 -> "["
-      * f2 -> "]"
-      */
-     public String visit(ArrayType n, String argu) throws Exception {
-        return "int[]";
-     }
-  
-     /**
-      * f0 -> "boolean"
-      */
-     public String visit(BooleanType n, String argu) throws Exception {
-        return "boolean";
-     }
-  
-     /**
-      * f0 -> "int"
-      */
-     public String visit(IntegerType n, String argu) throws Exception {
-        return "int";
-     }
-  
-     /**
-      * f0 -> Block()
-      *       | AssignmentStatement()
-      *       | ArrayAssignmentStatement()
-      *       | IfStatement()
-      *       | WhileStatement()
-      *       | PrintStatement()
-      */
-     public String visit(Statement n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
-     }
-  
-     /**
-      * f0 -> "{"
-      * f1 -> ( Statement() )*
-      * f2 -> "}"
-      */
-     public String visit(Block n, String argu) throws Exception {
-		return n.f1.accept(this, argu);
-     }
-  
-     /**
-      * f0 -> Identifier()
-      * f1 -> "="
-      * f2 -> Expression()
-      * f3 -> ";"
-      */
-     public String visit(AssignmentStatement n, String argu) throws Exception {
-        String type1 = n.f0.accept(this, "@ret-type@");
-		String type2 = n.f2.accept(this, argu);
-		/* Must check subtype */ 
-		if(!symbol_table.is_subtype(type1, type2)){
-			if(cur_class == null) // in main
-               throw new Exception("Error during assignment operation in Main method : Incompatible Type: " + type2 + " cannot be converted to " + type1 + ".");
-            else // in class method
-               throw new Exception("Error during assignment operation in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + type2 + " cannot be converted to " + type1 + ".");
-		}
-		
-		return null;
-     }
-  
-     /**
-      * f0 -> Identifier()
-      * f1 -> "["
-      * f2 -> Expression()
-      * f3 -> "]"
-      * f4 -> "="
-      * f5 -> Expression()
-      * f6 -> ";"
-      */
-     public String visit(ArrayAssignmentStatement n, String argu) throws Exception {
-        String variable_type = n.f0.accept(this, "@ret-type@");
-		if(variable_type != "int[]"){ // invalid array type
-			if(cur_class == null) // in main
-				throw new Exception("Error during array_indexing operation([]) on non int[] type in Main method.");
-			else // in class method
-				throw new Exception("Error during array_indexing operation([]) on non int[] type in method " + cur_method + " of class " + cur_class + ".");
-		}
-		
-		String index_type = n.f2.accept(this, argu);
-		if(index_type != "int"){ // invalid index type
-			if(cur_class == null) // in main
-               throw new Exception("Error during array_indexing operation([]) in Main method : Index of array is not an int.");
-            else // in class method
-               throw new Exception("Error during array_indexing operation([]) in method " + cur_method + " of class " + cur_class + " : Index of array is not an int.");
-		}
+      n.f7.accept(this, argu);
+      n.f8.accept(this, argu);
 
-        String val_type = n.f5.accept(this, argu);
-        if(val_type != "int"){ // invalid type
-			if(cur_class == null) // in main
-               throw new Exception("Error during array assignment operation in Main method : Incompatible Type: " + val_type + " cannot be converted to int.");
-            else // in class method
-               throw new Exception("Error during array assignment operation in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + val_type + " cannot be converted to int.");
-		}
+      String return_type = n.f10.accept(this, argu);
+      if(return_type != type)
+         throw new Exception("Error during declaration of method " + cur_method + "() of class" + cur_class + ": Incompatible types: '" + return_type + "' cannot be converted to " + type);
+
+      symbol_table.exit_scope(); // destroy current scope
+   
+      return null;
+   }
+  
+   /**
+    * f0 -> FormalParameter()
+    * f1 -> FormalParameterTail()
+    */
+   public String visit(FormalParameterList n, String argu) throws Exception {
+      n.f0.accept(this, argu);
+      n.f1.accept(this, argu);
+      return null;
+   }
+  
+   /**
+    * f0 -> Type()
+    * f1 -> Identifier()
+    */
+   public String visit(FormalParameter n, String argu) throws Exception {
+      n.f0.accept(this, argu);
+      n.f1.accept(this, argu);
+      return null;
+   }
+  
+   /**
+    * f0 -> ( FormalParameterTerm() )*
+    */
+   public String visit(FormalParameterTail n, String argu) throws Exception {
+      return n.f0.accept(this, argu);
+   }
+  
+   /**
+    * f0 -> ","
+    * f1 -> FormalParameter()
+    */
+   public String visit(FormalParameterTerm n, String argu) throws Exception {
+      n.f1.accept(this, argu);
+      return null;
+   }
+  
+   /**
+    * f0 -> ArrayType()
+    *       | BooleanType()
+    *       | IntegerType()
+    *       | Identifier()
+    */
+   public String visit(Type n, String argu) throws Exception {
+      return n.f0.accept(this, argu);
+   }
+  
+   /**
+    * f0 -> "int"
+    * f1 -> "["
+    * f2 -> "]"
+    */
+   public String visit(ArrayType n, String argu) throws Exception {
+      return "int[]";
+   }
+  
+   /**
+    * f0 -> "boolean"
+    */
+   public String visit(BooleanType n, String argu) throws Exception {
+      return "boolean";
+   }
+  
+   /**
+    * f0 -> "int"
+    */
+   public String visit(IntegerType n, String argu) throws Exception {
+      return "int";
+   }
+  
+   /**
+    * f0 -> Block()
+    *       | AssignmentStatement()
+    *       | ArrayAssignmentStatement()
+    *       | IfStatement()
+    *       | WhileStatement()
+    *       | PrintStatement()
+    */
+   public String visit(Statement n, String argu) throws Exception {
+      return n.f0.accept(this, argu);
+   }
+  
+   /**
+    * f0 -> "{"
+    * f1 -> ( Statement() )*
+    * f2 -> "}"
+    */
+   public String visit(Block n, String argu) throws Exception {
+      return n.f1.accept(this, argu);
+   }
+  
+   /**
+    * f0 -> Identifier()
+    * f1 -> "="
+    * f2 -> Expression()
+    * f3 -> ";"
+    */
+   public String visit(AssignmentStatement n, String argu) throws Exception {
+      String type1 = n.f0.accept(this, "@ret-type@");
+      String type2 = n.f2.accept(this, argu);
+       
+      if(!symbol_table.is_subtype(type1, type2)){
+         if(cur_class == null) // in main
+            throw new Exception("Error during assignment operation in Main method : Incompatible Type: '" + type2 + "' cannot be converted to " + type1);
+         else // in class method
+            throw new Exception("Error during assignment operation in method " + cur_method + "() of class " + cur_class + ": Incompatible Type: '" + type2 + "' cannot be converted to " + type1);
+   }
+   
+   return null;
+}
+
+   /**
+    * f0 -> Identifier()
+    * f1 -> "["
+    * f2 -> Expression()
+    * f3 -> "]"
+    * f4 -> "="
+    * f5 -> Expression()
+    * f6 -> ";"
+    */
+   public String visit(ArrayAssignmentStatement n, String argu) throws Exception {
+      String variable_type = n.f0.accept(this, "@ret-type@");
+      if(variable_type != "int[]"){ // invalid array type
+         if(cur_class == null) // in main
+            throw new Exception("Error during array assignment operation in Main method: Incompatible types: '" + variable_type + "' cannot be converted to int[]");
+         else // in class method
+            throw new Exception("Error during array assignment operation in method " + cur_method + "() of class: Incompatible types: '" + variable_type + "' cannot be converted to int[]");
+      }
+   
+      String index_type = n.f2.accept(this, argu);
+      if(index_type != "int"){ // invalid index type
+         if(cur_class == null) // in main
+            throw new Exception("Error during array assignment operation in Main method: Incompatible types on array index: '" + index_type + "' cannot be converted to int");
+         else // in class method
+            throw new Exception("Error during array assignment operation in method " + cur_method + "() of class " + cur_class + ": '" + index_type + "' cannot be converted to int");
+      }
+
+      String val_type = n.f5.accept(this, argu);
+      if(val_type != "int"){ // invalid type
+         if(cur_class == null) // in main
+            throw new Exception("Error during array assignment operation in Main method: Incompatible Types: " + val_type + " cannot be converted to int.");
+         else // in class method
+            throw new Exception("Error during array assignment operation in method " + cur_method + "() of class " + cur_class + ": Incompatible Type: " + val_type + " cannot be converted to int.");
+      }
 
 
-        return null;
-     }
+      return null;
+   }
   
-     /**
-      * f0 -> "if"
-      * f1 -> "("
-      * f2 -> Expression()
-      * f3 -> ")"
-      * f4 -> Statement()
-      * f5 -> "else"
-      * f6 -> Statement()
-      */
-     public String visit(IfStatement n, String argu) throws Exception {
-		String type = n.f2.accept(this, argu);
-        if(type != "boolean"){ // Condition of if statement must be of type boolean
-            if(cur_class == null) // in main
-            	throw new Exception("Error during If Statement in Main method : Incompatible Type: " + type + " cannot be converted to boolean.");
-         	else // in class method
-            	throw new Exception("Error during If Statement in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + type + " cannot be converted to boolean.");
-		}
+   /**
+    * f0 -> "if"
+    * f1 -> "("
+    * f2 -> Expression()
+    * f3 -> ")"
+    * f4 -> Statement()
+    * f5 -> "else"
+    * f6 -> Statement()
+    */
+   public String visit(IfStatement n, String argu) throws Exception {
+   String type = n.f2.accept(this, argu);
+      if(type != "boolean"){ // Condition of if statement must be of type boolean
+         if(cur_class == null) // in main
+            throw new Exception("Error during If Statement in Main method : Incompatible type of condition: '" + type + "' cannot be converted to boolean.");
+         else // in class method
+            throw new Exception("Error during If Statement in method " + cur_method + "() of class " + cur_class + " : Incompatible type of condition: '" + type + "' cannot be converted to boolean.");
+      }
 
-        n.f4.accept(this, argu);
+      n.f4.accept(this, argu);
 
-        n.f6.accept(this, argu);
-        return null;
-     }
+      n.f6.accept(this, argu);
+      return null;
+   }
   
-     /**
-      * f0 -> "while"
-      * f1 -> "("
-      * f2 -> Expression()
-      * f3 -> ")"
-      * f4 -> Statement()
-      */
-     public String visit(WhileStatement n, String argu) throws Exception {
-        String type = n.f2.accept(this, argu);
-        if(type != "boolean"){ // Clause of while statement must be of type boolean
-            if(cur_class == null) // in main
-            	throw new Exception("Error during While Statement in Main method : Incompatible Type: " + type + " cannot be converted to boolean.");
-         	else // in class method
-            	throw new Exception("Error during While Statement in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + type + " cannot be converted to boolean.");
+   /**
+    * f0 -> "while"
+    * f1 -> "("
+    * f2 -> Expression()
+    * f3 -> ")"
+    * f4 -> Statement()
+    */
+   public String visit(WhileStatement n, String argu) throws Exception {
+      String type = n.f2.accept(this, argu);
+      if(type != "boolean"){ // Clause of while statement must be of type boolean
+         if(cur_class == null) // in main
+            throw new Exception("Error during While Statement in Main method: Incompatible type of condition: '" + type + "' cannot be converted to boolean.");
+         else // in class method
+            throw new Exception("Error during While Statement in method " + cur_method + "() of class " + cur_class + ": Incompatible type of condition: '" + type + "' cannot be converted to boolean.");
 		}
 
 		n.f4.accept(this, argu);
 
-		return null;
-     }
+     return null;
+   }
   
    /**
     * f0 -> "System.out.println"
@@ -412,14 +406,15 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     */
    public String visit(AndExpression n, String argu) throws Exception {
       String type1 = n.f0.accept(this, argu);
-      String type2 = n.f2.accept(this, argu);
       if(type1 != "boolean"){
          if(cur_class == null) // in main
             throw new Exception("Error during logical AND operation(&&) in Main method: '" + type1 + "' cannot be converted to boolean");
          else // in class method
             throw new Exception("Error during logical AND operation(&&) in method " + cur_method + "() of class " + cur_class + ": '" + type1 + "' cannot be converted to boolean");
-      } 
-      if(type2 != "int"){ // * must be applied only on int types
+      }
+
+      String type2 = n.f2.accept(this, argu);
+      if(type2 != "boolean"){ // * must be applied only on int types
          if(cur_class == null) // in main
             throw new Exception("Error during logical AND operation(&&) in Main method: '" + type2 + "' cannot be converted to boolean");
          else // in class method
@@ -435,13 +430,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     */
    public String visit(CompareExpression n, String argu) throws Exception {
       String type1 = n.f0.accept(this, argu);
-      String type2 = n.f2.accept(this, argu);
       if(type1 != "int"){
          if(cur_class == null) // in main
             throw new Exception("Error during less-than operation(<) in Main method: '" + type1 + "' cannot be converted to int");
          else // in class method
             throw new Exception("Error during less-than operation(<) in method " + cur_method + "() of class " + cur_class + ": '" + type1 + "' cannot be converted to int");
-      } 
+      }
+
+      String type2 = n.f2.accept(this, argu);
       if(type2 != "int"){ // * must be applied only on int types
          if(cur_class == null) // in main
             throw new Exception("Error during less-than operation(<) in Main method: '" + type2 + "' cannot be converted to int");
@@ -458,13 +454,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     */
    public String visit(PlusExpression n, String argu) throws Exception {
       String type1 = n.f0.accept(this, argu);
-      String type2 = n.f2.accept(this, argu);
       if(type1 != "int"){
          if(cur_class == null) // in main
             throw new Exception("Error during plus operation(+) in Main method: '" + type1 + "' cannot be converted to int");
          else // in class method
             throw new Exception("Error during plus operation(+) in method " + cur_method + "() of class " + cur_class + ": '" + type1 + "' cannot be converted to int");
-      } 
+      }
+
+      String type2 = n.f2.accept(this, argu);
       if(type2 != "int"){ // * must be applied only on int types
          if(cur_class == null) // in main
             throw new Exception("Error during plus operation(+) in Main method: '" + type2 + "' cannot be converted to int");
@@ -481,13 +478,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     */
    public String visit(MinusExpression n, String argu) throws Exception {
       String type1 = n.f0.accept(this, argu);
-      String type2 = n.f2.accept(this, argu);
       if(type1 != "int"){
          if(cur_class == null) // in main
             throw new Exception("Error during minus operation(-) in Main method: '" + type1 + "' cannot be converted to int");
          else // in class method
             throw new Exception("Error during minus operation(-) in method " + cur_method + "() of class " + cur_class + ": '" + type1 + "' cannot be converted to int");
-      } 
+      }
+
+      String type2 = n.f2.accept(this, argu);
       if(type2 != "int"){ // * must be applied only on int types
          if(cur_class == null) // in main
             throw new Exception("Error during minus operation(-) in Main method: '" + type2 + "' cannot be converted to int");
@@ -504,14 +502,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     */
    public String visit(TimesExpression n, String argu) throws Exception {
       String type1 = n.f0.accept(this, argu);
-      String type2 = n.f2.accept(this, argu);
       if(type1 != "int"){
          if(cur_class == null) // in main
             throw new Exception("Error during times operation(*) in Main method: '" + type1 + "' cannot be converted to int");
          else // in class method
             throw new Exception("Error during times operation(*) in method " + cur_method + "() of class " + cur_class + ": '" + type1 + "' cannot be converted to int");
+      }
 
-      } 
+      String type2 = n.f2.accept(this, argu);
       if(type2 != "int"){ // * must be applied only on int types
          if(cur_class == null) // in main
             throw new Exception("Error during times operation(*) in Main method: '" + type2 + "' cannot be converted to int");
