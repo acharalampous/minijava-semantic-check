@@ -12,10 +12,12 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
 
     private SymbolTable symbol_table;
     private String cur_method; // name of method that visitor is currently in
+    private String file_name; // name of file checked, without .java extension
 
-    public CollectVisitor(SymbolTable st){
+    public CollectVisitor(SymbolTable st, String f_name){
         symbol_table = st;
         cur_method = null;
+        file_name = f_name;
     }
 
 
@@ -60,7 +62,9 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     public String visit(MainClass n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
+        String class_name = n.f1.accept(this, argu);
+        if(class_name != this.file_name)
+            throw new Exception("Error in file: Incorrect public class name '" + class_name + "'. Should be stored in a file named " + class_name + ".java, instead of " + file_name);
         n.f2.accept(this, argu);
         n.f3.accept(this, argu);
         n.f4.accept(this, argu);

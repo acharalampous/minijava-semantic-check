@@ -4,49 +4,52 @@ import java.io.*;
 
 public class Main {
 
-    public String file_type_check(String file_name) throws Exception{
+    public static String file_type_check(String file_name) throws Exception{
         if(file_name == null) // no file given
-            throw new Exception("No file provided");
+            throw new Exception("Cannot perform Semantic Analysis. No file given.");
         if(file_name.length() < 6) // invalid file type
-            return null;
+            throw new Exception("Cannot perform Semantic Analysis. Invalid File Type given.");
 
-        String file_type = file_name.substring(file_name.length() - 5, file_name.length() - 1);
+        String file_type = file_name.substring(file_name.length() - 5, file_name.length());
         if(file_type != ".java"){ // invalid file type
-            return null;
+            throw new Exception("Cannot perform Semantic Analysis. Invalid File Type given.");
+
         }        
 
-        return file_name.substring(0, file_name.length() - 5);
+        return file_name.substring(0, file_name.length() - 6); // return file name, without .java extension
     }
+
     public static void main (String [] args){
         if(args.length < 1){
             System.err.println("Usage: java Main <inputFile1> <inputFile2> .. <inputFileN>");
             System.exit(1);
         }
 
-        System.out.println("Valid executon. Performing Semantic Analysis on files given.");
+        System.out.println("Valid execution. Performing Semantic Analysis on files given.");
         /* Perform Semantic Check on all files provided */
         for(int i = 0; i < args.length; i++){
             FileInputStream fis = null;
             try{
                 System.out.println("\n\n\n** " + args[i] + "**");
-                
-                fis = new FileInputStream(args[0]);
+                String file_name = file_type_check(args[i]);
+
+                fis = new FileInputStream(args[i]);
 
                 MiniJavaParser parser = new MiniJavaParser(fis);
                 
                 Goal root = parser.Goal();
-                System.err.println("\tProgram parsed successfully.\n\n");
+                System.err.println("\tProgram Parsed Successfully.");
     
                 SymbolTable symbol_table = new SymbolTable();
     
-                CollectVisitor collect_v = new CollectVisitor(symbol_table);
+                CollectVisitor collect_v = new CollectVisitor(symbol_table, file_name);
                 root.accept(collect_v, null);
         
-                System.out.println("\n\nDone Semantic Check.\n\n");
+                System.out.println("\tProgram Symanticly Check.");
             
                 String err_type = symbol_table.check_unknown();
                 if(err_type != null){
-                    throw new Exception("Undefined reference to type " + err_type + ".");
+                    throw new Exception("Error: Unknown type " + err_type);
                 }
         
                 CheckVisitor check_v = new CheckVisitor(symbol_table);
