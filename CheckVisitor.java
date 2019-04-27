@@ -16,12 +16,12 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
    private String cur_method;
    
 
-    /* Constructor */
-    public CheckVisitor(SymbolTable st){
-		symbol_table = st;
-		cur_class = null;
-		cur_method = null;
-    }
+   /* Constructor */
+   public CheckVisitor(SymbolTable st){
+      symbol_table = st;
+      cur_class = null;
+      cur_method = null;
+   }
 
 
     //
@@ -159,14 +159,19 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
         String type = n.f1.accept(this, argu);
         cur_method = n.f2.accept(this, argu);
 	
+		symbol_table.enter_scope(); // initialize scope hashmap
 		symbol_table.insert_arguments(cur_class, cur_method); // store arguments in hashmap
 
+		
 		n.f7.accept(this, argu);
         n.f8.accept(this, argu);
 		String return_type = n.f10.accept(this, argu);
-		if(!return_type.equals(type))
+		if(return_type != type)
 			throw new Exception("Error in method " + cur_method + " of class" + cur_class + " : Invalid return type.");
-        return _ret;
+
+		symbol_table.exit_scope();
+		
+		return _ret;
      }
   
      /**
@@ -176,7 +181,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
      public String visit(FormalParameterList n, String argu) throws Exception {
         String _ret=null;
         n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
+		n.f1.accept(this, argu);
         return _ret;
      }
   
@@ -270,9 +275,16 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f3 -> ";"
       */
      public String visit(AssignmentStatement n, String argu) throws Exception {
-        String type1 = n.f0.accept(this, "@prim-expr");
+        String type1 = n.f0.accept(this, "@ret-type@");
 		String type2 = n.f2.accept(this, argu);
 		/* Must check subtype */ 
+		if(!symbol_table.is_subtype(type1, type2)){
+			if(cur_class == null) // in main
+               throw new Exception("Error during assignment operation in Main method : Incompatible Type: " + type2 + " cannot be converted to " + type1 + ".");
+            else // in class method
+               throw new Exception("Error during assignment operation in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + type2 + " cannot be converted to " + type1 + ".");
+		}
+		
 		return null;
      }
   
@@ -286,15 +298,32 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f6 -> ";"
       */
      public String visit(ArrayAssignmentStatement n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
-        n.f4.accept(this, argu);
-        n.f5.accept(this, argu);
-        n.f6.accept(this, argu);
-        return _ret;
+        String variable_type = n.f0.accept(this, "@ret-type@");
+		if(variable_type != "int[]"){ // invalid array type
+			if(cur_class == null) // in main
+				throw new Exception("Error during array_indexing operation([]) on non int[] type in Main method.");
+			else // in class method
+				throw new Exception("Error during array_indexing operation([]) on non int[] type in method " + cur_method + " of class " + cur_class + ".");
+		}
+		
+		String index_type = n.f2.accept(this, argu);
+		if(index_type != "int"){ // invalid index type
+			if(cur_class == null) // in main
+               throw new Exception("Error during array_indexing operation([]) in Main method : Index of array is not an int.");
+            else // in class method
+               throw new Exception("Error during array_indexing operation([]) in method " + cur_method + " of class " + cur_class + " : Index of array is not an int.");
+		}
+
+        String val_type = n.f5.accept(this, argu);
+        if(val_type != "int"){ // invalid type
+			if(cur_class == null) // in main
+               throw new Exception("Error during array assignment operation in Main method : Incompatible Type: " + val_type + " cannot be converted to int.");
+            else // in class method
+               throw new Exception("Error during array assignment operation in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + val_type + " cannot be converted to int.");
+		}
+
+
+        return null;
      }
   
      /**
@@ -307,15 +336,18 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f6 -> Statement()
       */
      public String visit(IfStatement n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
+		String type = n.f2.accept(this, argu);
+        if(type != "boolean"){ // Condition of if statement must be of type boolean
+            if(cur_class == null) // in main
+            	throw new Exception("Error during If Statement in Main method : Incompatible Type: " + type + " cannot be converted to boolean.");
+         	else // in class method
+            	throw new Exception("Error during If Statement in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + type + " cannot be converted to boolean.");
+		}
+
         n.f4.accept(this, argu);
-        n.f5.accept(this, argu);
+
         n.f6.accept(this, argu);
-        return _ret;
+        return null;
      }
   
      /**
@@ -326,13 +358,17 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f4 -> Statement()
       */
      public String visit(WhileStatement n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
-        n.f4.accept(this, argu);
-        return _ret;
+        String type = n.f2.accept(this, argu);
+        if(type != "boolean"){ // Clause of while statement must be of type boolean
+            if(cur_class == null) // in main
+            	throw new Exception("Error during While Statement in Main method : Incompatible Type: " + type + " cannot be converted to boolean.");
+         	else // in class method
+            	throw new Exception("Error during While Statement in method " + cur_method + " of class " + cur_class + " : Incompatible Type: " + type + " cannot be converted to boolean.");
+		}
+
+		n.f4.accept(this, argu);
+
+		return null;
      }
   
      /**
@@ -342,15 +378,17 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f3 -> ")"
       * f4 -> ";"
       */
-     public String visit(PrintStatement n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
-        n.f4.accept(this, argu);
-        return _ret;
-     }
+    public String visit(PrintStatement n, String argu) throws Exception {
+    	String type = n.f2.accept(this, argu);
+        if(type != "int" && type != "boolean"){ // println is only valid for int and boolean types
+            if(cur_class == null) // in main
+            	throw new Exception("Error during System.out.println in Main method : System.out.println does not accept argument of type " + type + ".");
+         	else // in class method
+            	throw new Exception("Error during System.out.println in method " + cur_method + " of class " + cur_class + " : System.out.println does not accept argument of type " + type + ".");
+		}
+		
+		return null;
+    }
   
      /**
       * f0 -> AndExpression()
@@ -375,7 +413,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
      public String visit(AndExpression n, String argu) throws Exception {
         String type1 = n.f0.accept(this, argu);
         String type2 = n.f2.accept(this, argu);
-        if((!type1.equals("boolean")) || (!type2.equals("boolean"))){
+        if(type1 != "boolean" || type2 != "boolean"){ // && must be applied only on boolean types
             if(cur_class == null) // in main
                throw new Exception("Error during logical and operation(&&) on non-boolean types in Main method.");
             else // in class method
@@ -392,7 +430,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       public String visit(CompareExpression n, String argu) throws Exception {
          String type1 = n.f0.accept(this, argu);
          String type2 = n.f2.accept(this, argu);
-         if((!type1.equals("int")) || (!type2.equals("int"))){
+         if(type1 != "int" || type2 != "int"){ // < must be applied only on int types
             if(cur_class == null) // in main
                throw new Exception("Error during less-than operation(<) on non-integer types in Main method.");
             else // in class method
@@ -409,7 +447,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       public String visit(PlusExpression n, String argu) throws Exception {
          String type1 = n.f0.accept(this, argu);
          String type2 = n.f2.accept(this, argu);
-         if((!type1.equals("int")) || (!type2.equals("int"))){
+         if(type1 != "int" || type2 != "int"){ // + must be applied only on int types
             if(cur_class == null) // in main
                throw new Exception("Error during plus operation(+) on non-integer types in Main method.");
             else // in class method
@@ -426,7 +464,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       public String visit(MinusExpression n, String argu) throws Exception {
          String type1 = n.f0.accept(this, argu);
          String type2 = n.f2.accept(this, argu);
-         if((!type1.equals("int")) || (!type2.equals("int"))){
+         if(type1 != "int" || type2 != "int"){ // - must be applied only on int types
             if(cur_class == null) // in main
                throw new Exception("Error during minus operation(-) on non-integer types in Main method.");
             else // in class method
@@ -443,7 +481,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       public String visit(TimesExpression n, String argu) throws Exception {
          String type1 = n.f0.accept(this, argu);
          String type2 = n.f2.accept(this, argu);
-         if((!type1.equals("int")) || (!type2.equals("int"))){
+         if(type1 != "int" || type2 != "int"){ // * must be applied only on int types
             if(cur_class == null) // in main
                throw new Exception("Error during times operation(*) on non-integer types in Main method.");
             else // in class method
@@ -460,7 +498,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       */
       public String visit(ArrayLookup n, String argu) throws Exception {
          String variable_type = n.f0.accept(this, argu);
-         if(!variable_type.equals("int[]")){ // invalid array type
+         if(variable_type != "int[]"){ // invalid array type
             if(cur_class == null) // in main
                throw new Exception("Error during array_indexing operation([]) on non int[] type in Main method.");
             else // in class method
@@ -468,7 +506,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
          }
 
          String index_type = n.f2.accept(this, argu);
-         if(!index_type.equals("int")){ // invalid index type
+         if(index_type != "int"){ // invalid index type
             if(cur_class == null) // in main
                throw new Exception("Error during array_indexing operation([]) in Main method : Index of array is not an int.");
             else // in class method
@@ -485,7 +523,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       */
       public String visit(ArrayLength n, String argu) throws Exception {
          String variable_type = n.f0.accept(this, argu);
-         if(!variable_type.equals("int[]")){ // invalid array type
+         if(variable_type != "int[]"){ // invalid array type
             if(cur_class == null) // in main
                throw new Exception("Error during length operation on non int[] type in Main method.");
             else // in class method
@@ -503,7 +541,6 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f5 -> ")"
       */
 	public String visit(MessageSend n, String argu) throws Exception {
-		String _ret=null;
 		String type = n.f0.accept(this, argu);
 		String method = n.f2.accept(this, argu);
 		if(!symbol_table.is_valid_type(type)){
@@ -577,7 +614,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       *       | BracketExpression()
       */
       public String visit(PrimaryExpression n, String argu) throws Exception { 
-         return n.f0.accept(this, "@prim-expr"); // argument will be used by id, to return identifier's type and not name
+         return n.f0.accept(this, "@ret-type@"); // argument will be used by id, to return identifier's type and not name
       }
   
      /**
@@ -591,34 +628,34 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
        * f0 -> "true"
        */
       public String visit(TrueLiteral n, String argu) throws Exception {
-         return "bool";
+         return "boolean";
       }
    
       /**
        * f0 -> "false"
        */
       public String visit(FalseLiteral n, String argu) throws Exception {
-         return "bool";
+         return "boolean";
       }
    
       /**
        * f0 -> <IDENTIFIER>
        */
-      public String visit(Identifier n, String argu) throws Exception {
-         String id_name = n.f0.tokenImage;
-         if(argu.equals("@prim-expr")){ // was called by PrimaryExpression, must return id type
-            return symbol_table.lookup(id_name, cur_class);
-         }
-
-         return id_name;
-      }
+    public String visit(Identifier n, String argu) throws Exception {
+		String id_name = n.f0.tokenImage;
+		if(argu == "@ret-type@"){ // Caller wants type of id, must return id type
+			return symbol_table.lookup(id_name, cur_class);
+		}
+		 
+		return id_name;
+	}
   
       /**
        * f0 -> "this"
        */
       public String visit(ThisExpression n, String argu) throws Exception {
          if(cur_class == null) // invalid use of this in main
-				throw new Exception( "Error in Main method : Invalid use of operator \"this\". Not in a class.");
+				throw new Exception( "Error in Main method : Invalid use of operator \"this\". Not in a class scope.");
          else
             return cur_class; // return type of this
       }
@@ -631,11 +668,11 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f4 -> "]"
       */
       public String visit(ArrayAllocationExpression n, String argu) throws Exception {
-         String type = n.f3.accept(this, argu);
+         String type = n.f3.accept(this, null);
          
-         if(!type.equals("int"))
+         if(type != "int") // index must be int
 			   if (cur_class == null) // in main
-				   throw new Exception( "Error during new array operation in Main method : Size of table must be an int value.");
+				   throw new Exception("Error during new array operation in Main method : Size of table must be an int value.");
 			   else // in class method
 				   throw new Exception("Error during new operation in method " + cur_method + " of class " + cur_class + " : Size of table must be an int value.");
 		
@@ -649,7 +686,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f3 -> ")"
       */
       public String visit(AllocationExpression n, String argu) throws Exception {
-         String type = n.f1.accept(this, argu);
+         String type = n.f1.accept(this, null);
 		   /* Check if valid type */
 		   if(!symbol_table.is_valid_type(type))
 			   if(cur_class == null) // in main
@@ -666,13 +703,13 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       */
       public String visit(NotExpression n, String argu) throws Exception {
          String type = n.f1.accept(this, argu);
-         if(!type.equals("boolean"))
+         if(type != "boolean") // not expression must be applied on boolean type
 			   if(cur_class == null) // in main
 				   throw new Exception("Error during logical not operation(!) on non-boolean type in Main method.");
 			   else // in class method
 				   throw new Exception("Error during logical not operation(!) on non-boolean type in method " + cur_method + " of class " + cur_class + ".");
 		
-         return type;
+         return "boolean";
       }
   
      /**
@@ -681,7 +718,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
       * f2 -> ")"
       */
 	public String visit(BracketExpression n, String argu) throws Exception {
-      return n.f1.accept(this, argu);
+      return n.f1.accept(this, null);
 	}
 
 }

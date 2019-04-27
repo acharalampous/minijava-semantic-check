@@ -339,9 +339,8 @@ public class SymbolTable{
         Vector<NameType> arguments = (cc.get_methods()).get(method_name);
         
         /* Add every argument in hashmap */
-        for(NameType arg : arguments){
-            insert(arg.get_type(), arg.get_name());
-        }
+        for(int i = 1; i < arguments.size(); i++)
+            insert(arguments.elementAt(i).get_type(), arguments.elementAt(i).get_name());
     }
 
     /*
@@ -381,6 +380,30 @@ public class SymbolTable{
         }
 
         return variable_type;
+    }
+
+    /* Checks if type1 is subtype of type 2 */
+    public boolean is_subtype(String type1, String type2){
+        /* Check if same type */
+        if(type1 == type2)
+            return true;
+        
+        
+        /* Get all subtypes of type1 */
+        Vector<String> all_subtypes = subtypes.get(type1);
+
+        if(all_subtypes == null) // has no subtypes
+            return false;
+
+        /* Search type2 in type1 super classes */
+        for(String super_type : all_subtypes){
+            if(type2 == super_type) // found super, type1 is subtype of type2
+                return true;
+        }
+
+
+        return false; // type2 not found in super classes
+
     }
 
 
@@ -433,8 +456,8 @@ public class SymbolTable{
         for(int i = 1; i < called_method.size(); i++){ // check if all argument types are the same
             String c_arg_type = called_method.elementAt(i);
             String arg_type = method_args.elementAt(i).get_type();
-            if(!(c_arg_type.equals(arg_type)))
-                return null; // found different type
+            if(!is_subtype(c_arg_type, arg_type))
+                return null;
         }
 
         return method_args.elementAt(0).get_type(); // return type of method
