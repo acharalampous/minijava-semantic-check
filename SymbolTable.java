@@ -285,28 +285,28 @@ public class SymbolTable{
      
     /* Prints all classes' variables and methods offsets */
     public void print_offsets(){
-        System.out.println("Printing Class Offsets:");
+        System.out.println("\n  ->Printing Class Offsets:");
         /* Print offset for all classes' variables and methods */
         for (Map.Entry<String, ClassContent> entry : this.class_names.entrySet()){
             String class_name = entry.getKey();
-            System.out.println("\n\n- Class " + class_name + " -");
+            System.out.println("\n\n    - Class " + class_name + " -");
             
             ClassContent cc = entry.getValue();
             
             /* Print variables */
             Vector<NameOffset> v_offsets = cc.get_v_offsets(); 
-            System.out.println("  -- Variables --");
+            System.out.println("      -- Variables --");
 
             for(NameOffset var : v_offsets){
-                System.out.println("    " + class_name + "." + var.get_name() + " : " + var.get_offset());
+                System.out.println("          " + class_name + "." + var.get_name() + " : " + var.get_offset());
             }
 
             /* Print methods */
             Vector<NameOffset> m_offsets = cc.get_m_offsets(); 
-            System.out.println("  -- Methods --");
+            System.out.println("\n      -- Methods --");
             
             for(NameOffset method : m_offsets){
-                System.out.println("    " + class_name + "." + method.get_name() + " : " + method.get_offset());
+                System.out.println("          " + class_name + "." + method.get_name() + " : " + method.get_offset());
             }
         }
     }
@@ -385,7 +385,7 @@ public class SymbolTable{
     /* Checks if type1 is subtype of type 2 */
     public boolean is_subtype(String type1, String type2){
         /* Check if same type */
-        if(type1 == type2)
+        if(type1.equals(type2))
             return true;
         
         
@@ -397,7 +397,7 @@ public class SymbolTable{
 
         /* Search type2 in type1 super classes */
         for(String super_type : all_subtypes){
-            if(type2 == super_type) // found super, type1 is subtype of type2
+            if(type2.equals(super_type)) // found super, type1 is subtype of type2
                 return true;
         }
 

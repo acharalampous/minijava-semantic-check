@@ -1,7 +1,7 @@
 package tests.err_msg;
 
-public class err1_msg{
-    public static void main(String[] args){
+public class err_msg{
+    public static void main(String[] int2){
         int[] k;
     }
 }
