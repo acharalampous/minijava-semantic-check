@@ -10,7 +10,6 @@ import java.util.*;
 
 
 /* Implementation of a Symbol Table that it will be used for semantic check for MiniJava Language */
-
 public class SymbolTable{
 
     private Set<String> primitive_t; // Primitive types of language (int, boolean, int[])
@@ -285,7 +284,7 @@ public class SymbolTable{
      
     /* Prints all classes' variables and methods offsets */
     public void print_offsets(){
-        System.out.println("\n  ->Printing Class Offsets:");
+        System.out.println("\n  -> Printing Class Offsets:");
         /* Print offset for all classes' variables and methods */
         for (Map.Entry<String, ClassContent> entry : this.class_names.entrySet()){
             String class_name = entry.getKey();
@@ -418,6 +417,8 @@ public class SymbolTable{
         
     }
 
+
+    /* Get innermost's method parameter vector */
     public Vector<String> pop_back_method(){
         int v_size = curr_methods_pars.size();
         if(v_size != 0){
@@ -428,7 +429,7 @@ public class SymbolTable{
         return null;
     }
 
-    /* Insert new arg in innermost method */
+    /* Insert new arg in innermost method's parameters */
     public void insert_back_arg(String par){
         int v_size = curr_methods_pars.size();
         if(v_size != 0){
@@ -436,6 +437,12 @@ public class SymbolTable{
         }
     }
 
+    /*
+     * Given a class and a method names, pops from the stack the parameters stored
+     * and checks if there is a method in class with the specific parameter types.
+     * Exists: return type,
+     * Does not exist: null
+     */
     public String find_method(String class_name, String method_name){
         ClassContent cc = class_names.get(class_name);
 
@@ -453,7 +460,8 @@ public class SymbolTable{
         if(called_method.size() != method_args.size())
             return null;
         
-        for(int i = 1; i < called_method.size(); i++){ // check if all argument types are the same
+        /* Check if all argument types are the same or subtypes */
+        for(int i = 1; i < called_method.size(); i++){ 
             String c_arg_type = called_method.elementAt(i);
             String arg_type = method_args.elementAt(i).get_type();
             if(!is_subtype(c_arg_type, arg_type))

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "args": "examples/BinaryTree.java examples/BubbleSort-error.java examples/BubbleSort.java examples/Factorial-error.java examples/Factorial.java examples/LinearSearch-error.java examples/LinearSearch.java examples/LinkedList.java examples/LinkedList-error.java examples/MoreThan4-error.java examples/MoreThan4.java examples/myExample2.java examples/myExample.java examples/QuickSort-error.java examples/QuickSort.java examples/TreeVisitor-error.java examples/TreeVisitor.java",
+            "args": "examples/BubbleSort-error.java",
             "type": "java",
             "name": "Debug (Launch) - Current File",
             "request": "launch",

@@ -80,7 +80,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         /* Collect class name */
         String class_name = n.f1.accept(this, argu);
         int result = symbol_table.add_class(class_name);
-        if(result != 0)
+        if(result != 0) // redeclaration
             throw new Exception("Error in declaration of class " + class_name + ": Class with the same name was already declared");
 
         n.f3.accept(this, class_name);
@@ -170,13 +170,13 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         int result = symbol_table.check_class_method(argu, return_type, name);
         if(result == -1)
             throw new Exception("Error in declaration of method " + name + "() of class " + argu + ": Class not found");
-        else if(result == -2)
+        else if(result == -2) // redeclaration
             throw new Exception("Error in declaration of method " + name + "() of class " + argu + ": Method '" + name + "()' is already declared");
         
         n.f4.accept(this, argu);
         
         result = symbol_table.add_class_method(argu, name);
-        if(result != 0)
+        if(result != 0) // overload
             throw new Exception("Error in declaration of method " + name + "() of class " + argu + ": Invalid Overidding: Method '" + name + "()' is already declared in super class with different types");
 
         symbol_table.clear_temp_pars();

@@ -24,9 +24,9 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
    }
 
 
-    //
-    // User-generated visitor methods below
-    //
+   //
+   // User-generated visitor methods below
+   //
 
    /**
     * f0 -> MainClass()
@@ -60,12 +60,12 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     * f17 -> "}"
     */
    public String visit(MainClass n, String argu) throws Exception {   
-      symbol_table.enter_scope(); // initialize scope hashmap
+      symbol_table.enter_scope(); // initialize main scope hashmap
       
       n.f14.accept(this, argu);
       n.f15.accept(this, argu);
       
-      symbol_table.exit_scope();
+      symbol_table.exit_scope(); // destroy main scope
       return null;
    }
   
@@ -105,7 +105,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     * f7 -> "}"
     */
    public String visit(ClassExtendsDeclaration n, String argu) throws Exception {
-      cur_class =  n.f1.accept(this, argu);
+      cur_class =  n.f1.accept(this, argu); // get class name
          
       n.f6.accept(this, argu);
    
@@ -165,7 +165,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
 
       String return_type = n.f10.accept(this, argu);
       if(!return_type.equals(type))
-         throw new Exception("Error during declaration of method " + cur_method + "() of class" + cur_class + ": Incompatible types: '" + return_type + "' cannot be converted to " + type);
+         throw new Exception("Error during declaration of method " + cur_method + "() of class" + cur_class + ": Incompatible return type: '" + return_type + "' cannot be converted to " + type);
 
       symbol_table.exit_scope(); // destroy current scope
    
@@ -271,8 +271,8 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
    public String visit(AssignmentStatement n, String argu) throws Exception {
       String type1 = n.f0.accept(this, "@ret-type@");
       String type2 = n.f2.accept(this, argu);
-       
-      if(!symbol_table.is_subtype(type1, type2)){
+      
+      if(!symbol_table.is_subtype(type2, type1)){
          if(cur_class == null) // in main
             throw new Exception("Error during assignment operation in Main method : Incompatible Type: '" + type2 + "' cannot be converted to " + type1);
          else // in class method
@@ -671,13 +671,21 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     * f0 -> <IDENTIFIER>
     */
    public String visit(Identifier n, String argu) throws Exception {
-		String id_name = n.f0.tokenImage;
+      String name = n.f0.tokenImage;
       if(argu != null)
          if(argu.equals("@ret-type@")){ // Caller wants type of id, must return id type
-			   return symbol_table.lookup(id_name, cur_class);
+            String type =  symbol_table.lookup(name, cur_class);
+            if(type == null){
+               if(cur_class == null) // in main
+				      throw new Exception("Error during operation in Main method: Variable '" + name + "' is not declared");
+			            else // in class method
+                  throw new Exception("Error during operation in method " + cur_method + "() of class " + cur_class + ": Variable '" + name + "' is not declared");
+            }
+
+            return type;
 		}
 		 
-		return id_name;
+		return name;
 	}
   
    /**
