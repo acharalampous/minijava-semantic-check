@@ -1,1 +1,0 @@
-1. Can main class be derived? [test73.java]

@@ -19,7 +19,6 @@ public class SymbolTable{
 
     private Vector<NameType> temp_method_pars; // Vector that holds parameters of the next method to be stored
 
-
     private Map<String, String> current_scope; // Holds all the declared variables with their type, in current scope
     
     // Stack that holds parameters of methods to be checked. It's a stack for the case of methods in methods_args */ 

@@ -57,6 +57,11 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f17 -> "}"
      */
     public String visit(MainClass n, String argu) throws Exception {
+        String main_class_name = n.f1.accept(this, argu); 
+        int result = symbol_table.add_class(main_class_name);
+        if(result != 0) // redeclaration
+            throw new Exception("Error in declaration of Main Class " + main_class_name + ": Class with the same name was already declared");
+
         return null;
     }
 
