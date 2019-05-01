@@ -9,19 +9,25 @@
 import syntaxtree.*;
 import visitor.GJDepthFirst;
 
+
+/*
+ * Second of two visitors used in semantic analysis. After collectVisitor collected all classes info,
+ * this visitor performs all semantic checks so the program given is correct according to language
+ * specifications.
+ */
 public class CheckVisitor extends GJDepthFirst<String, String>{
     
 	private SymbolTable symbol_table;
-	private String cur_class;
-   private String cur_method;
-   private String main_class_args; // main class arguments variable, kept so it wont be redeclared
+	private String cur_class; // current class the visitor is in
+   private String cur_method; // current method the visitor is in
+   private String main_args; // main class arguments variable name, kept so it wont be redeclared in main
 
    /* Constructor */
    public CheckVisitor(SymbolTable st){
       symbol_table = st;
       cur_class = null;
       cur_method = null;
-      main_class_args = null;
+      main_args = null;
    }
 
 
@@ -61,14 +67,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     * f17 -> "}"
     */
    public String visit(MainClass n, String argu) throws Exception {   
-      main_class_args = n.f11.accept(this, argu);
+      main_args = n.f11.accept(this, argu); // keep main's args, so they wont be redeclared 
       symbol_table.enter_scope(); // initialize main scope hashmap
       
       n.f14.accept(this, argu);
       n.f15.accept(this, argu);
       
       symbol_table.exit_scope(); // destroy main scope
-      main_class_args = null;
+      main_args = null;
       return null;
    }
   
@@ -124,8 +130,8 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
    public String visit(VarDeclaration n, String argu) throws Exception {
 		String type = n.f0.accept(this, argu);
 		String name = n.f1.accept(this, argu);
-      if(main_class_args != null) // if in main, variable name must not be equal to main class arguments name 
-         if(name.equals(main_class_args))
+      if(main_args != null) // if in main, variable name must not be equal to main class arguments name 
+         if(name.equals(main_args))
             throw new Exception("Error during declaration of " + type + " " + name + " in Main method: " + name + " is already declared and used for main's arguments ");
 
 		int result = symbol_table.insert(type, name);

@@ -8,12 +8,17 @@
 import syntaxtree.*;
 import visitor.GJDepthFirst;
 
+/*
+ * First of two visitors used in semantic analysis. This visitor's job is to collect all class names 
+ * and their contents(methods, fields, supers etc) and check for their validity. After this visitor,
+ * the checkVisitor will use all info found, to finish semantic check.
+ */
 public class CollectVisitor extends GJDepthFirst<String, String>{
 
     private SymbolTable symbol_table;
     private String cur_method; // name of method that visitor is currently in
 
-    
+    /* Constructor */
     public CollectVisitor(SymbolTable st){
         symbol_table = st;
         cur_method = null;
@@ -58,8 +63,8 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
      * f17 -> "}"
      */
     public String visit(MainClass n, String argu) throws Exception {
-        String main_class_name = n.f1.accept(this, argu); 
-        int result = symbol_table.add_class(main_class_name);
+        String main_class_name = n.f1.accept(this, argu); // keep main class name(so its offsets wont be printed) 
+        int result = symbol_table.add_class(main_class_name); // store it as class, so it can be extended by other classes
         if(result != 0) // redeclaration
             throw new Exception("Error in declaration of Main Class " + main_class_name + ": Class with the same name was already declared");
 

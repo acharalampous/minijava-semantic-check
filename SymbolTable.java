@@ -285,35 +285,6 @@ public class SymbolTable{
         return null;
     }
      
-    /* Prints all classes' variables and methods offsets */
-    public void print_offsets(){
-        class_names.remove(main_class); // do not print main class
-        
-        System.out.println("\n  -> Printing Class Offsets:");
-        /* Print offset for all classes' variables and methods */
-        for (Map.Entry<String, ClassContent> entry : this.class_names.entrySet()){
-            String class_name = entry.getKey();
-            System.out.println("\n\n    - Class " + class_name + " -");
-            
-            ClassContent cc = entry.getValue();
-            
-            /* Print variables */
-            Vector<NameOffset> v_offsets = cc.get_v_offsets(); 
-            System.out.println("      -- Variables --");
-
-            for(NameOffset var : v_offsets){
-                System.out.println("          " + class_name + "." + var.get_name() + " : " + var.get_offset());
-            }
-
-            /* Print methods */
-            Vector<NameOffset> m_offsets = cc.get_m_offsets(); 
-            System.out.println("\n      -- Methods --");
-            
-            for(NameOffset method : m_offsets){
-                System.out.println("          " + class_name + "." + method.get_name() + " : " + method.get_offset());
-            }
-        }
-    }
 
     /* Inserts a new variable name and type in current scope. 
      * If the name is redeclared or undefined type, return error.
@@ -348,7 +319,7 @@ public class SymbolTable{
     }
 
     /*
-     * Checks if given type is of class type, 
+     * Checks if given type is of class type. 
      * Is a class type: 1,
      * Is not: 0,
      */
@@ -411,7 +382,7 @@ public class SymbolTable{
     }
 
 
-    
+    /* Methods used for the stack of calling methods */
     ////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////
     /* Inserts new "level" in method parameters */
@@ -477,6 +448,36 @@ public class SymbolTable{
     }
     ////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////
+
+    /* Prints all classes' variables and methods offsets */
+    public void print_offsets(){
+        class_names.remove(main_class); // do not print main class
+        
+        System.out.println("\n  -> Printing Class Offsets:");
+        /* Print offset for all classes' variables and methods */
+        for (Map.Entry<String, ClassContent> entry : this.class_names.entrySet()){
+            String class_name = entry.getKey();
+            System.out.println("\n\n    - Class " + class_name + " -");
+            
+            ClassContent cc = entry.getValue();
+            
+            /* Print variables */
+            Vector<NameOffset> v_offsets = cc.get_v_offsets(); 
+            System.out.println("      -- Variables --");
+
+            for(NameOffset var : v_offsets){
+                System.out.println("          " + class_name + "." + var.get_name() + " : " + var.get_offset());
+            }
+
+            /* Print methods */
+            Vector<NameOffset> m_offsets = cc.get_m_offsets(); 
+            System.out.println("\n      -- Methods --");
+            
+            for(NameOffset method : m_offsets){
+                System.out.println("          " + class_name + "." + method.get_name() + " : " + method.get_offset());
+            }
+        }
+    }
 
 
     /* Accesors */
