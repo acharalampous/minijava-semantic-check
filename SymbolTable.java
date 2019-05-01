@@ -24,7 +24,9 @@ public class SymbolTable{
     // Stack that holds parameters of methods to be checked. It's a stack for the case of methods in methods_args */ 
     private Vector<Vector<String>> curr_methods_pars; 
 
+    private String main_class; // main class name, kept so it's offset wont be printed
     
+
     /* Constructor */
     public SymbolTable(){
         class_names = new LinkedHashMap<>();
@@ -34,6 +36,8 @@ public class SymbolTable{
         temp_method_pars = null;
         current_scope = null;
         curr_methods_pars = new Vector<>();
+        main_class = null;
+
     }
     
 
@@ -283,6 +287,8 @@ public class SymbolTable{
      
     /* Prints all classes' variables and methods offsets */
     public void print_offsets(){
+        class_names.remove(main_class); // do not print main class
+        
         System.out.println("\n  -> Printing Class Offsets:");
         /* Print offset for all classes' variables and methods */
         for (Map.Entry<String, ClassContent> entry : this.class_names.entrySet()){
@@ -476,9 +482,11 @@ public class SymbolTable{
     /* Accesors */
     public Map<String, ClassContent> get_class_names(){ return class_names; }
     public Map<String, Vector<String>> get_subtypes(){ return subtypes; }
+    public String get_main_class(){ return main_class; }
     
     
     /* Mutators */
+    public void set_main_class(String main_class){ this.main_class = main_class; }
     /* Adds a new class_name to set and initialize its content */
     public void store_class(String new_class){ class_names.put(new_class, new ClassContent()); } 
     public void clear_temp_pars(){ temp_method_pars = null; }

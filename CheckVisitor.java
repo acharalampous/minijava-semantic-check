@@ -14,13 +14,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
 	private SymbolTable symbol_table;
 	private String cur_class;
    private String cur_method;
-   
+   private String main_class_args; // main class arguments variable, kept so it wont be redeclared
 
    /* Constructor */
    public CheckVisitor(SymbolTable st){
       symbol_table = st;
       cur_class = null;
       cur_method = null;
+      main_class_args = null;
    }
 
 
@@ -60,12 +61,14 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
     * f17 -> "}"
     */
    public String visit(MainClass n, String argu) throws Exception {   
+      main_class_args = n.f11.accept(this, argu);
       symbol_table.enter_scope(); // initialize main scope hashmap
       
       n.f14.accept(this, argu);
       n.f15.accept(this, argu);
       
       symbol_table.exit_scope(); // destroy main scope
+      main_class_args = null;
       return null;
    }
   
@@ -121,6 +124,9 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
    public String visit(VarDeclaration n, String argu) throws Exception {
 		String type = n.f0.accept(this, argu);
 		String name = n.f1.accept(this, argu);
+      if(main_class_args != null) // if in main, variable name must not be equal to main class arguments name 
+         if(name.equals(main_class_args))
+            throw new Exception("Error during declaration of " + type + " " + name + " in Main method: " + name + " is already declared and used for main's arguments ");
 
 		int result = symbol_table.insert(type, name);
 		if(result == -1) // redeclaration
@@ -165,7 +171,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
 
       String return_type = n.f10.accept(this, argu);
       if(!return_type.equals(type))
-         throw new Exception("Error during declaration of method " + cur_method + "() of class" + cur_class + ": Incompatible return type: '" + return_type + "' cannot be converted to " + type);
+         throw new Exception("Error during declaration of method " + cur_method + "() of class " + cur_class + ": Incompatible return type: '" + return_type + "' cannot be converted to " + type);
 
       symbol_table.exit_scope(); // destroy current scope
    
@@ -378,7 +384,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
          if(cur_class == null) // in main
             throw new Exception("Error during System.out.println() in Main method: Incompatible types: '" + type + "' cannot be converted to int or boolean");
          else // in class method
-            throw new Exception("Error during System.out.println() in method " + cur_method + "() of class" + cur_class + ": Incompatible types: '" + type + "' cannot be converted to int or boolean");
+            throw new Exception("Error during System.out.println() in method " + cur_method + "() of class " + cur_class + ": Incompatible types: '" + type + "' cannot be converted to int or boolean");
    }
    
    return null;
@@ -712,7 +718,7 @@ public class CheckVisitor extends GJDepthFirst<String, String>{
          if (cur_class == null) // in main
             throw new Exception("Error during new array operation in Main method: Incompatible types on array size: '" + type + "' cannot be converted to int");
          else // in class method
-            throw new Exception("Error during new operation in method " + cur_method + "() of class " + cur_class + ": Incompatible types on array size: '" + type + "' cannot be converted to int");
+            throw new Exception("Error during new array operation in method " + cur_method + "() of class " + cur_class + ": Incompatible types on array size: '" + type + "' cannot be converted to int");
    
       return "int[]";
    }

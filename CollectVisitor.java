@@ -13,6 +13,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
     private SymbolTable symbol_table;
     private String cur_method; // name of method that visitor is currently in
 
+    
     public CollectVisitor(SymbolTable st){
         symbol_table = st;
         cur_method = null;
@@ -62,6 +63,7 @@ public class CollectVisitor extends GJDepthFirst<String, String>{
         if(result != 0) // redeclaration
             throw new Exception("Error in declaration of Main Class " + main_class_name + ": Class with the same name was already declared");
 
+        symbol_table.set_main_class(main_class_name);
         return null;
     }
 
