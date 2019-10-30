@@ -6,7 +6,7 @@
 
 ## Language Specifications
 Language Specifications can be viewed [here](minijava_specs.txt)
-Also the minijava grammar in BNF can be found [here](minijava_bnf.html)
+<br />Also the minijava grammar in BNF can be found [here](minijava_bnf.md)
 
 ## Deployment
 
