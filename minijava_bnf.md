@@ -1,691 +1,353 @@
-# BNF for minijava.jj
-
-## NON-TERMINALS
-
-<table>
-
-<tbody>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod1">Goal</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[MainClass](#prod2) ( [TypeDeclaration](#prod3) )* <EOF></td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod2">MainClass</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"class" [Identifier](#prod4) "{" "public" "static" "void" "main" "(" "String" "[" "]" [Identifier](#prod4) ")" "{" ( [VarDeclaration](#prod5) )* ( [Statement](#prod6) )* "}" "}"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod3">TypeDeclaration</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[ClassDeclaration](#prod7)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[ClassExtendsDeclaration](#prod8)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod7">ClassDeclaration</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"class" [Identifier](#prod4) "{" ( [VarDeclaration](#prod5) )* ( [MethodDeclaration](#prod9) )* "}"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod8">ClassExtendsDeclaration</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"class" [Identifier](#prod4) "extends" [Identifier](#prod4) "{" ( [VarDeclaration](#prod5) )* ( [MethodDeclaration](#prod9) )* "}"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod5">VarDeclaration</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[Type](#prod10) [Identifier](#prod4) ";"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod9">MethodDeclaration</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"public" [Type](#prod10) [Identifier](#prod4) "(" ( [FormalParameterList](#prod11) )? ")" "{" ( [VarDeclaration](#prod5) )* ( [Statement](#prod6) )* "return" [Expression](#prod12) ";" "}"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod11">FormalParameterList</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[FormalParameter](#prod13) ( [FormalParameterRest](#prod14) )*</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod13">FormalParameter</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[Type](#prod10) [Identifier](#prod4)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod14">FormalParameterRest</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"," [FormalParameter](#prod13)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod10">Type</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[ArrayType](#prod15)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[BooleanType](#prod16)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[IntegerType](#prod17)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[Identifier](#prod4)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod15">ArrayType</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"int" "[" "]"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod16">BooleanType</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"boolean"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod17">IntegerType</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"int"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod6">Statement</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[Block](#prod18)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[AssignmentStatement](#prod19)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[ArrayAssignmentStatement](#prod20)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[IfStatement](#prod21)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[WhileStatement](#prod22)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[PrintStatement](#prod23)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod18">Block</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"{" ( [Statement](#prod6) )* "}"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod19">AssignmentStatement</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[Identifier](#prod4) "=" [Expression](#prod12) ";"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod20">ArrayAssignmentStatement</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[Identifier](#prod4) "[" [Expression](#prod12) "]" "=" [Expression](#prod12) ";"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod21">IfStatement</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"if" "(" [Expression](#prod12) ")" [Statement](#prod6) "else" [Statement](#prod6)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod22">WhileStatement</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"while" "(" [Expression](#prod12) ")" [Statement](#prod6)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod23">PrintStatement</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"System.out.println" "(" [Expression](#prod12) ")" ";"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod12">Expression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[AndExpression](#prod24)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[CompareExpression](#prod25)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[PlusExpression](#prod26)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[MinusExpression](#prod27)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[TimesExpression](#prod28)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[ArrayLookup](#prod29)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[ArrayLength](#prod30)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[MessageSend](#prod31)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[Clause](#prod43)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod24">AndExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[Clause](#prod43) "&&" [Clause](#prod43)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod25">CompareExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32) "<" [PrimaryExpression](#prod32)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod26">PlusExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32) "+" [PrimaryExpression](#prod32)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod27">MinusExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32) "-" [PrimaryExpression](#prod32)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod28">TimesExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32) "*" [PrimaryExpression](#prod32)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod29">ArrayLookup</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32) "[" [PrimaryExpression](#prod32) "]"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod30">ArrayLength</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32) "." "length"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod31">MessageSend</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32) "." [Identifier](#prod4) "(" ( [ExpressionList](#prod33) )? ")"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod33">ExpressionList</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[Expression](#prod12) ( [ExpressionRest](#prod34) )*</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod34">ExpressionRest</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"," [Expression](#prod12)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod43">Clause</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[NotExpression](#prod41)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[PrimaryExpression](#prod32)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod32">PrimaryExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">[IntegerLiteral](#prod35)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[TrueLiteral](#prod36)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[FalseLiteral](#prod37)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[Identifier](#prod4)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[ThisExpression](#prod38)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[ArrayAllocationExpression](#prod39)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[AllocationExpression](#prod40)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"></td>
-
-<td align="CENTER" valign="BASELINE">|</td>
-
-<td align="LEFT" valign="BASELINE">[BracketExpression](#prod42)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod35">IntegerLiteral</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE"><INTEGER_LITERAL></td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod36">TrueLiteral</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"true"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod37">FalseLiteral</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"false"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod4">Identifier</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE"><IDENTIFIER></td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod38">ThisExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"this"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod39">ArrayAllocationExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"new" "int" "[" [Expression](#prod12) "]"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod40">AllocationExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"new" [Identifier](#prod4) "(" ")"</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod41">NotExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"!" [Clause](#prod43)</td>
-
-</tr>
-
-<tr>
-
-<td align="RIGHT" valign="BASELINE"><a name="prod42">BracketExpression</a></td>
-
-<td align="CENTER" valign="BASELINE">::=</td>
-
-<td align="LEFT" valign="BASELINE">"(" [Expression](#prod12) ")"</td>
-
-</tr>
-
-</tbody>
-
-</table>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<TITLE>BNF for minijava.jj</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=CENTER>BNF for minijava.jj</H1>
+<H2 ALIGN=CENTER>NON-TERMINALS</H2>
+<TABLE>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod1">Goal</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod2">MainClass</A> ( <A HREF="#prod3">TypeDeclaration</A> )* &lt;EOF&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod2">MainClass</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"class" <A HREF="#prod4">Identifier</A> "{" "public" "static" "void" "main" "(" "String" "[" "]" <A HREF="#prod4">Identifier</A> ")" "{" ( <A HREF="#prod5">VarDeclaration</A> )* ( <A HREF="#prod6">Statement</A> )* "}" "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod3">TypeDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod7">ClassDeclaration</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod8">ClassExtendsDeclaration</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod7">ClassDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"class" <A HREF="#prod4">Identifier</A> "{" ( <A HREF="#prod5">VarDeclaration</A> )* ( <A HREF="#prod9">MethodDeclaration</A> )* "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod8">ClassExtendsDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"class" <A HREF="#prod4">Identifier</A> "extends" <A HREF="#prod4">Identifier</A> "{" ( <A HREF="#prod5">VarDeclaration</A> )* ( <A HREF="#prod9">MethodDeclaration</A> )* "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod5">VarDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod10">Type</A> <A HREF="#prod4">Identifier</A> ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod9">MethodDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"public" <A HREF="#prod10">Type</A> <A HREF="#prod4">Identifier</A> "(" ( <A HREF="#prod11">FormalParameterList</A> )? ")" "{" ( <A HREF="#prod5">VarDeclaration</A> )* ( <A HREF="#prod6">Statement</A> )* "return" <A HREF="#prod12">Expression</A> ";" "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod11">FormalParameterList</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod13">FormalParameter</A> ( <A HREF="#prod14">FormalParameterRest</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod13">FormalParameter</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod10">Type</A> <A HREF="#prod4">Identifier</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod14">FormalParameterRest</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"," <A HREF="#prod13">FormalParameter</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod10">Type</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod15">ArrayType</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod16">BooleanType</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod17">IntegerType</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod15">ArrayType</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"int" "[" "]"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod16">BooleanType</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"boolean"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod17">IntegerType</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"int"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod6">Statement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod18">Block</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod19">AssignmentStatement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod20">ArrayAssignmentStatement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod21">IfStatement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod22">WhileStatement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod23">PrintStatement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod18">Block</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"{" ( <A HREF="#prod6">Statement</A> )* "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod19">AssignmentStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A> "=" <A HREF="#prod12">Expression</A> ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod20">ArrayAssignmentStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A> "[" <A HREF="#prod12">Expression</A> "]" "=" <A HREF="#prod12">Expression</A> ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod21">IfStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"if" "(" <A HREF="#prod12">Expression</A> ")" <A HREF="#prod6">Statement</A> "else" <A HREF="#prod6">Statement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod22">WhileStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"while" "(" <A HREF="#prod12">Expression</A> ")" <A HREF="#prod6">Statement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod23">PrintStatement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"System.out.println" "(" <A HREF="#prod12">Expression</A> ")" ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod12">Expression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod24">AndExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod25">CompareExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod26">PlusExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod27">MinusExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod28">TimesExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod29">ArrayLookup</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod30">ArrayLength</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod31">MessageSend</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod43">Clause</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod24">AndExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod43">Clause</A> "&amp;&amp;" <A HREF="#prod43">Clause</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod25">CompareExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A> "&lt;" <A HREF="#prod32">PrimaryExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod26">PlusExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A> "+" <A HREF="#prod32">PrimaryExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod27">MinusExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A> "-" <A HREF="#prod32">PrimaryExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod28">TimesExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A> "*" <A HREF="#prod32">PrimaryExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod29">ArrayLookup</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A> "[" <A HREF="#prod32">PrimaryExpression</A> "]"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod30">ArrayLength</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A> "." "length"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod31">MessageSend</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A> "." <A HREF="#prod4">Identifier</A> "(" ( <A HREF="#prod33">ExpressionList</A> )? ")"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod33">ExpressionList</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod12">Expression</A> ( <A HREF="#prod34">ExpressionRest</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod34">ExpressionRest</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"," <A HREF="#prod12">Expression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod43">Clause</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod41">NotExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod32">PrimaryExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod32">PrimaryExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod35">IntegerLiteral</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod36">TrueLiteral</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod37">FalseLiteral</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod38">ThisExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod39">ArrayAllocationExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod40">AllocationExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod42">BracketExpression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod35">IntegerLiteral</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;INTEGER_LITERAL&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod36">TrueLiteral</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"true"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod37">FalseLiteral</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"false"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod4">Identifier</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;IDENTIFIER&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod38">ThisExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"this"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod39">ArrayAllocationExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"new" "int" "[" <A HREF="#prod12">Expression</A> "]"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod40">AllocationExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"new" <A HREF="#prod4">Identifier</A> "(" ")"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod41">NotExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"!" <A HREF="#prod43">Clause</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod42">BracketExpression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"(" <A HREF="#prod12">Expression</A> ")"</TD>
+</TR>
+
+</TABLE>
+</BODY>
+</HTML>
