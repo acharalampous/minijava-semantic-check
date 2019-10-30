@@ -1,7 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <HTML>
 <HEAD>
-<TITLE>BNF for minijava.jj</TITLE>
 </HEAD>
 <BODY>
 <H1 ALIGN=CENTER>BNF for minijava.jj</H1>
